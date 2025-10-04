@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1031316928123",
+    "project_id": "planapp-a5ce5",
+    "storage_bucket": "planapp-a5ce5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1031316928123:android:3b67495b5ef2d883ab14de",
+        "android_client_info": {
+          "package_name": "com.example.planapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBfLfjSRl3rYqYZyhAaezBcr-NvOUIPnzw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

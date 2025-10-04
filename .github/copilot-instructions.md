@@ -149,7 +149,36 @@ lib/
    └─ presentation/
 
 ---
+## Quy tắc đặt tên và tổ chức Widget (UI)
 
+### 1. Nguyên tắc chung
+- Mỗi **Widget** phải được định nghĩa trong **file riêng**, tên file dùng `snake_case.dart`.  
+  - Ví dụ: `task_card_widget.dart`, `project_list_item_widget.dart`.  
+- **Tên class** của widget phải mô tả rõ ràng vai trò hoặc nội dung hiển thị.  
+  - Ví dụ:  
+    - `TaskCardWidget` → hiển thị thẻ công việc.  
+    - `ProjectHeaderWidget` → hiển thị tiêu đề project.  
+    - `ChatMessageBubbleWidget` → hiển thị bong bóng tin nhắn.  
+- Không đặt tên chung chung như `MyWidget`, `CustomWidget`, `ContainerWidget`, v.v.
+
+### 2. Cấu trúc thư mục
+- Tất cả widget UI nằm trong thư mục `presentation/widgets/`.  
+- Các widget đặc thù của một màn hình nên đặt trong thư mục con
+
+### 3. Quy tắc tạo và đặt tên Widget
+- Mỗi Widget nên đặt trong file riêng, theo định dạng: `snake_case.dart`.
+- Tên class luôn kết thúc bằng **Widget**, ví dụ:
+  - `TaskCardWidget`
+  - `ProjectHeaderWidget`
+  - `ChatMessageBubbleWidget`
+- Mỗi màn hình có thư mục `widgets/` riêng để chứa các widget đặc thù.
+- Các widget tái sử dụng chung cho nhiều màn hình → đặt trong `presentation/widgets/`.
+- Phải có mô tả ngắn gọn ở đầu class:
+  ```dart
+  /// Widget hiển thị thông tin chi tiết của một công việc (Task)
+  class TaskDetailCardWidget extends StatelessWidget { ... }
+
+---
 ## Giao diện (UI / UX)
 - Tuân theo **Material Design 3**.  
 - Tập trung vào accessibility, responsive layout, hỗ trợ **chế độ sáng & tối**.  

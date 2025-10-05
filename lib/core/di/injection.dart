@@ -1,17 +1,36 @@
 import 'package:get_it/get_it.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-
-/// Service locator dùng để quản lý dependency trong ứng dụng
+import '../../data/datasources/firebase/auth_service.dart';
+import '../../data/repositories_impl/auth_repository_impl.dart';
+import '../../domain/repositories/auth_repository.dart';
+import '../../domain/usecases/login_user.dart';
+import '../../domain/usecases/register_user.dart';
+import '../../domain/usecases/logout_user.dart';
+import '../../presentation/blocs/auth/auth_bloc.dart';
 final sl = GetIt.instance;
 
-/// Hàm khởi tạo dependency, được gọi ở main.dart
 Future<void> initDependencies() async {
-  // Firebase instances
+  // Firebase
   sl.registerLazySingleton(() => FirebaseAuth.instance);
   sl.registerLazySingleton(() => FirebaseFirestore.instance);
-  sl.registerLazySingleton(() => FirebaseStorage.instance);
 
-  // TODO: sau này sẽ đăng ký thêm Repository, Bloc, UseCase tại đây
+  // Services
+  sl.registerLazySingleton(() => AuthService(sl(), sl()));
+
+  // Repository
+  sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(sl()));
+
+  // UseCases
+  sl.registerLazySingleton(() => LoginUser(sl()));
+  sl.registerLazySingleton(() => RegisterUser(sl()));
+  sl.registerLazySingleton(() => LogoutUser(sl()));
+
+  // Bloc
+  sl.registerFactory(() => AuthBloc(
+  loginUser: sl(),
+  registerUser: sl(),
+  logoutUser: sl(),
+));
+
 }

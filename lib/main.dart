@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'core/di/injection.dart';
+import 'presentation/blocs/auth/auth_bloc.dart';
+import 'presentation/blocs/auth/auth_state.dart';
 import 'presentation/screens/auth/login_screen.dart';
+import 'presentation/screens/home/home_screen.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -21,11 +25,29 @@ class PlanApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'PlanApp',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(useMaterial3: true),
-      home: const LoginScreen(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<AuthBloc>(
+          create: (context) => sl<AuthBloc>(),
+        ),
+      ],
+      child: MaterialApp(
+        title: 'PlanApp',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(useMaterial3: true),
+        home: BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, state) {
+            print('Auth State in Main: $state'); // Debug
+            
+            // Xử lý điều hướng dựa trên auth state
+            if (state is AuthAuthenticated) {
+              return const HomeScreen();
+            } else {
+              return const LoginScreen();
+            }
+          },
+        ),
+      ),
     );
   }
 }

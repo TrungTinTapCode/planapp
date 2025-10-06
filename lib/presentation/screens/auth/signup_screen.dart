@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../core/di/injection.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
@@ -19,79 +18,106 @@ class _SignupScreenState extends State<SignupScreen> {
   final nameController = TextEditingController();
 
   @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<AuthBloc>(),
-      child: Scaffold(
-        appBar: AppBar(title: const Text('Đăng ký tài khoản')),
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: BlocConsumer<AuthBloc, AuthState>(
-            listener: (context, state) {
-              if (state is AuthAuthenticated) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Đăng ký thành công!')),
-                );
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const HomeScreen()),
-                );
-              } else if (state is AuthError) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.message)),
-                );
-              }
-            },
-            builder: (context, state) {
-              if (state is AuthLoading) {
-                return const Center(child: CircularProgressIndicator());
-              }
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    nameController.dispose();
+    super.dispose();
+  }
 
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  TextField(
-                    controller: nameController,
-                    decoration: const InputDecoration(labelText: 'Họ và tên'),
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Đăng ký tài khoản')),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: BlocConsumer<AuthBloc, AuthState>(
+          listener: (context, state) {
+            print('Current Auth State: $state'); // Debug
+            
+            if (state is AuthAuthenticated) {
+              print('Navigation to HomeScreen...'); // Debug
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Đăng ký thành công!')),
+              );
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const HomeScreen()),
+                (route) => false,
+              );
+            } else if (state is AuthError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          },
+          builder: (context, state) {
+            if (state is AuthLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Họ và tên',
+                    border: OutlineInputBorder(),
                   ),
-                  TextField(
-                    controller: emailController,
-                    decoration: const InputDecoration(labelText: 'Email'),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: emailController,
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    border: OutlineInputBorder(),
                   ),
-                  TextField(
-                    controller: passwordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(labelText: 'Mật khẩu'),
+                  keyboardType: TextInputType.emailAddress,
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: passwordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Mật khẩu',
+                    border: OutlineInputBorder(),
                   ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
                     onPressed: () {
                       final email = emailController.text.trim();
                       final pass = passwordController.text.trim();
                       final name = nameController.text.trim();
+                      
                       if (email.isEmpty || pass.isEmpty || name.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Vui lòng nhập đầy đủ thông tin')),
                         );
                         return;
                       }
-                      context
-                          .read<AuthBloc>()
-                          .add(AuthRegisterRequested(email, pass, name));
+                      
+                      context.read<AuthBloc>().add(
+                        AuthRegisterRequested(email, pass, name)
+                      );
                     },
                     child: const Text('Đăng ký'),
                   ),
-                  const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Text('Đã có tài khoản? Đăng nhập ngay'),
-                  ),
-                ],
-              );
-            },
-          ),
+                ),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Đã có tài khoản? Đăng nhập ngay'),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );

@@ -1,12 +1,16 @@
+// UseCase xử lý việc đăng xuất người dùng khỏi hệ thống
+// Vị trí: lib/domain/usecases/logout_user.dart
+
 import '../repositories/auth_repository.dart';
 
-/// UseCase: Đăng xuất người dùng
 class LogoutUser {
-  final AuthRepository repository;
+  final AuthRepository _authRepository;
 
-  LogoutUser(this.repository);
+  // Khởi tạo UseCase với AuthRepository dependency
+  LogoutUser(this._authRepository);
 
-  Future<void> call() async {
-    await repository.logout();
+  // Thực hiện đăng xuất - không trả về dữ liệu
+  Future<void> execute() async {
+    return await _authRepository.logout();
   }
 }

@@ -1,7 +1,5 @@
-/// Mục đích: Service tương tác với Firebase Auth (data layer).
-/// Vị trí: lib/data/datasources/firebase/auth_service.dart
-
-// TODO: Thêm các method đăng nhập/đăng ký ở đây
+// Service xử lý các tác vụ xác thực với Firebase Auth
+// Vị trí: lib/data/datasources/firebase/auth_service.dart
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -11,8 +9,10 @@ class AuthService {
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
 
+  // Khởi tạo service với FirebaseAuth và FirebaseFirestore instances
   AuthService(this._auth, this._firestore);
 
+  // Đăng nhập người dùng với email và mật khẩu
   Future<UserModel> login({
     required String email,
     required String password,
@@ -26,6 +26,7 @@ class AuthService {
     return UserModel(id: user.uid, email: user.email ?? '');
   }
 
+  // Đăng ký tài khoản người dùng mới
   Future<UserModel> register({
     required String email,
     required String password,
@@ -37,6 +38,7 @@ class AuthService {
     );
     final user = credential.user!;
 
+    // Lưu thông tin người dùng vào Firestore
     await _firestore.collection('users').doc(user.uid).set({
       'id': user.uid,
       'email': email,
@@ -47,13 +49,13 @@ class AuthService {
     return UserModel(id: user.uid, email: email, name: name);
   }
 
-  Future<void> logout() async => _auth.signOut();
+  // Đăng xuất người dùng khỏi Firebase Auth
+  Future<void> logout() async => await _auth.signOut();
 
+  // Lấy thông tin người dùng hiện tại đang đăng nhập
   UserModel? get currentUser {
     final user = _auth.currentUser;
     if (user == null) return null;
     return UserModel(id: user.uid, email: user.email ?? '');
   }
 }
-
-

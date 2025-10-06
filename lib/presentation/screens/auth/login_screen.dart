@@ -1,100 +1,108 @@
+// Màn hình đăng nhập - logic và state management
+// Vị trí: lib/presentation/screens/auth/login_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../core/di/injection.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
-import '../home/home_screen.dart';
 import 'signup_screen.dart';
+import 'login_ui.dart';
 
-
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  Widget build(BuildContext context) {
+    return const _LoginScreenContent();
+  }
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
+class _LoginScreenContent extends StatefulWidget {
+  const _LoginScreenContent();
+
+  @override
+  State<_LoginScreenContent> createState() => _LoginScreenContentState();
+}
+
+class _LoginScreenContentState extends State<_LoginScreenContent> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<AuthBloc>(),
-      child: Scaffold(
-        appBar: AppBar(title: const Text('Đăng nhập')),
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: BlocConsumer<AuthBloc, AuthState>(
-            listener: (context, state) {
-              if (state is AuthAuthenticated) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Chào mừng, ${state.user.email}!')),
-                );
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const HomeScreen()),
-                );
-              } else if (state is AuthError) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.message)),
-                );
-              }
-            },
-            builder: (context, state) {
-              if (state is AuthLoading) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              // 🧱 Đây là phần bị mất ở bạn
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  TextField(
-                    controller: emailController,
-                    decoration: const InputDecoration(labelText: 'Email'),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: passwordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(labelText: 'Mật khẩu'),
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: () {
-                      final email = emailController.text.trim();
-                      final pass = passwordController.text.trim();
-                      if (email.isEmpty || pass.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Vui lòng nhập đủ thông tin')),
-                        );
-                        return;
-                      }
-                      context
-                          .read<AuthBloc>()
-                          .add(AuthLoginRequested(email, pass));
-                    },
-                    child: const Text('Đăng nhập'),
-                  ),
-                  const SizedBox(height: 8),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const SignupScreen()),
-                      );
-                    },
-                    child: const Text('Chưa có tài khoản? Đăng ký'),
-                  ),
-                ],
-              );
-            },
-          ),
-        ),
+    return Scaffold(
+      body: BlocListener<AuthBloc, AuthState>(
+        listener: (context, state) {
+          if (state is AuthError) {
+            _showErrorSnackbar(context, state.message);
+          }
+        },
+        child: _buildLoginContent(context),
       ),
+    );
+  }
+
+  // Xây dựng nội dung màn hình đăng nhập
+  Widget _buildLoginContent(BuildContext context) {
+    final isLoading = context.watch<AuthBloc>().state is AuthLoading;
+
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          LoginUIComponents.loginHeader(),
+          LoginUIComponents.loginForm(
+            emailController: _emailController,
+            passwordController: _passwordController,
+            onLogin: () => _handleLogin(context),
+            isLoading: isLoading,
+          ),
+          const SizedBox(height: 20),
+          LoginUIComponents.registerLink(
+            onTap: () => _navigateToRegister(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Xử lý sự kiện đăng nhập
+  void _handleLogin(BuildContext context) {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      _showErrorSnackbar(context, 'Vui lòng nhập đầy đủ thông tin');
+      return;
+    }
+
+    context.read<AuthBloc>().add(AuthLoginRequested(email, password));
+  }
+
+  // Hiển thị lỗi
+  void _showErrorSnackbar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
+  // Điều hướng sang màn hình đăng ký
+  void _navigateToRegister(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const SignupScreen()),
     );
   }
 }

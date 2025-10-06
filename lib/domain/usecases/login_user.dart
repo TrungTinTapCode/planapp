@@ -1,18 +1,17 @@
-/// Mục đích: UseCase: Login user.
-/// Vị trí: lib/domain/usecases/login_user.dart
+// UseCase xử lý việc đăng nhập người dùng
+// Vị trí: lib/domain/usecases/login_user.dart
 
-// TODO: Implement LoginUser usecase
-
-import '../repositories/auth_repository.dart';
 import '../entities/user.dart';
+import '../repositories/auth_repository.dart';
 
-/// UseCase: Đăng nhập người dùng với email & password
 class LoginUser {
-  final AuthRepository repository;
+  final AuthRepository _authRepository;
 
-  LoginUser(this.repository);
+  // Khởi tạo UseCase với AuthRepository dependency
+  LoginUser(this._authRepository);
 
-  Future<UserEntity> call(String email, String password) {
-    return repository.login(email, password);
+  // Thực hiện đăng nhập với email và password
+  Future<UserEntity> execute(String email, String password) async {
+    return await _authRepository.login(email, password);
   }
 }

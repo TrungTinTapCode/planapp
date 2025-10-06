@@ -1,24 +1,31 @@
+// Implementation cụ thể của AuthRepository cho data layer
+// Vị trí: lib/data/repositories_impl/auth_repository_impl.dart
+
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/firebase/auth_service.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
-  final AuthService authService;
+  final AuthService _authService;
 
-  AuthRepositoryImpl(this.authService);
+  // Khởi tạo repository với AuthService dependency
+  AuthRepositoryImpl(this._authService);
 
   @override
+  // Đăng nhập người dùng - chuyển tiếp yêu cầu đến AuthService
   Future<UserEntity> login(String email, String password) =>
-      authService.login(email: email, password: password);
+      _authService.login(email: email, password: password);
 
   @override
+  // Đăng ký người dùng mới - chuyển tiếp yêu cầu đến AuthService
   Future<UserEntity> register(String email, String password, String name) =>
-      authService.register(email: email, password: password, name: name);
+      _authService.register(email: email, password: password, name: name);
 
   @override
-  Future<void> logout() => authService.logout();
+  // Đăng xuất người dùng - chuyển tiếp yêu cầu đến AuthService
+  Future<void> logout() => _authService.logout();
 
   @override
-  UserEntity? getCurrentUser() => authService.currentUser;
+  // Lấy thông tin người dùng hiện tại từ AuthService
+  UserEntity? getCurrentUser() => _authService.currentUser;
 }
-

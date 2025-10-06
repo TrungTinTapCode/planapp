@@ -1,125 +1,118 @@
+// Màn hình đăng ký - logic và state management
+// Vị trí: lib/presentation/screens/auth/signup_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
-import '../home/home_screen.dart';
+import 'login_screen.dart';
+import 'signup_ui.dart';
 
-class SignupScreen extends StatefulWidget {
+class SignupScreen extends StatelessWidget {
   const SignupScreen({super.key});
 
   @override
-  State<SignupScreen> createState() => _SignupScreenState();
+  Widget build(BuildContext context) {
+    return const _SignupScreenContent();
+  }
 }
 
-class _SignupScreenState extends State<SignupScreen> {
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
-  final nameController = TextEditingController();
+class _SignupScreenContent extends StatefulWidget {
+  const _SignupScreenContent();
+
+  @override
+  State<_SignupScreenContent> createState() => _SignupScreenContentState();
+}
+
+class _SignupScreenContentState extends State<_SignupScreenContent> {
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
 
   @override
   void dispose() {
-    emailController.dispose();
-    passwordController.dispose();
-    nameController.dispose();
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Đăng ký tài khoản')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: BlocConsumer<AuthBloc, AuthState>(
-          listener: (context, state) {
-            print('Current Auth State: $state'); // Debug
-            
-            if (state is AuthAuthenticated) {
-              print('Navigation to HomeScreen...'); // Debug
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Đăng ký thành công!')),
-              );
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => const HomeScreen()),
-                (route) => false,
-              );
-            } else if (state is AuthError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            }
-          },
-          builder: (context, state) {
-            if (state is AuthLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextField(
-                  controller: nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Họ và tên',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: emailController,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.emailAddress,
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: passwordController,
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Mật khẩu',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      final email = emailController.text.trim();
-                      final pass = passwordController.text.trim();
-                      final name = nameController.text.trim();
-                      
-                      if (email.isEmpty || pass.isEmpty || name.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Vui lòng nhập đầy đủ thông tin')),
-                        );
-                        return;
-                      }
-                      
-                      context.read<AuthBloc>().add(
-                        AuthRegisterRequested(email, pass, name)
-                      );
-                    },
-                    child: const Text('Đăng ký'),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Đã có tài khoản? Đăng nhập ngay'),
-                ),
-              ],
-            );
-          },
-        ),
+      body: BlocListener<AuthBloc, AuthState>(
+        listener: (context, state) {
+          if (state is AuthError) {
+            _showErrorSnackbar(context, state.message);
+          }
+        },
+        child: _buildSignupContent(context),
       ),
+    );
+  }
+
+  // Xây dựng nội dung màn hình đăng ký
+  Widget _buildSignupContent(BuildContext context) {
+    final isLoading = context.watch<AuthBloc>().state is AuthLoading;
+
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SignupUIComponents.signupHeader(),
+          SignupUIComponents.signupForm(
+            nameController: _nameController,
+            emailController: _emailController,
+            passwordController: _passwordController,
+            onSignup: () => _handleSignup(context),
+            isLoading: isLoading, // ✅ Sử dụng trực tiếp
+          ),
+          const SizedBox(height: 20),
+          SignupUIComponents.loginLink(
+            onTap: () => _navigateToLogin(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Xử lý sự kiện đăng ký
+  void _handleSignup(BuildContext context) {
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (name.isEmpty || email.isEmpty || password.isEmpty) {
+      _showErrorSnackbar(context, 'Vui lòng nhập đầy đủ thông tin');
+      return;
+    }
+
+    if (password.length < 6) {
+      _showErrorSnackbar(context, 'Mật khẩu phải có ít nhất 6 ký tự');
+      return;
+    }
+
+    context.read<AuthBloc>().add(AuthRegisterRequested(email, password, name));
+  }
+
+  // Hiển thị lỗi
+  void _showErrorSnackbar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  // Điều hướng sang màn hình đăng nhập
+  void _navigateToLogin(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
     );
   }
 }

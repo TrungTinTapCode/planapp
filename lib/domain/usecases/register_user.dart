@@ -1,13 +1,17 @@
-import '../repositories/auth_repository.dart';
+// UseCase xử lý việc đăng ký tài khoản người dùng mới
+// Vị trí: lib/domain/usecases/register_user.dart
+
 import '../entities/user.dart';
+import '../repositories/auth_repository.dart';
 
-/// UseCase: Đăng ký người dùng mới
 class RegisterUser {
-  final AuthRepository repository;
+  final AuthRepository _authRepository;
 
-  RegisterUser(this.repository);
+  // Khởi tạo UseCase với AuthRepository dependency
+  RegisterUser(this._authRepository);
 
-  Future<UserEntity> call(String email, String password, String name) {
-    return repository.register(email, password, name);
+  // Thực hiện đăng ký user mới với email, password và name
+  Future<UserEntity> execute(String email, String password, String name) async {
+    return await _authRepository.register(email, password, name);
   }
 }

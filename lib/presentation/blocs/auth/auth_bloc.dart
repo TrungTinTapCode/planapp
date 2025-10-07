@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/usecases/login_user.dart';
 import '../../../domain/usecases/register_user.dart';
 import '../../../domain/usecases/logout_user.dart';
+import '../../../domain/usecases/get_current_user.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
@@ -12,20 +13,42 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final LoginUser _loginUser;
   final RegisterUser _registerUser;
   final LogoutUser _logoutUser;
+  final GetCurrentUser? _getCurrentUser;
 
   // Khởi tạo AuthBloc với các UseCases cần thiết
   AuthBloc({
     required LoginUser loginUser,
     required RegisterUser registerUser,
     required LogoutUser logoutUser,
-  }) :_loginUser = loginUser,
-      _registerUser = registerUser,
-      _logoutUser = logoutUser,
-      super(AuthInitial()) {
+    GetCurrentUser? getCurrentUser,
+  }) : _loginUser = loginUser,
+       _registerUser = registerUser,
+       _logoutUser = logoutUser,
+       _getCurrentUser = getCurrentUser,
+       super(AuthInitial()) {
     // Đăng ký các event handlers
     on<AuthLoginRequested>(_onLoginRequested);
     on<AuthRegisterRequested>(_onRegisterRequested);
     on<AuthLogoutRequested>(_onLogoutRequested);
+    // Kiểm tra nếu đã có user đang đăng nhập từ cache/session
+    on<AuthCheckRequested>(_onCheckRequested);
+    add(AuthCheckRequested());
+  }
+  Future<void> _onCheckRequested(
+    AuthCheckRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    try {
+      final user = _getCurrentUser?.execute();
+      if (user != null) {
+        // ignore: avoid_print
+        print('AuthBloc: Found current user at init id=${user.id}');
+        emit(AuthAuthenticated(user));
+      }
+    } catch (e, st) {
+      // ignore: avoid_print
+      print('AuthBloc: check current user error: $e\n$st');
+    }
   }
 
   // Xử lý event đăng nhập

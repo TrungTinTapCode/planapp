@@ -18,10 +18,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required LoginUser loginUser,
     required RegisterUser registerUser,
     required LogoutUser logoutUser,
-  }) : _loginUser = loginUser,
-       _registerUser = registerUser,
-       _logoutUser = logoutUser,
-       super(AuthInitial()) {
+  }) :_loginUser = loginUser,
+      _registerUser = registerUser,
+      _logoutUser = logoutUser,
+      super(AuthInitial()) {
     // Đăng ký các event handlers
     on<AuthLoginRequested>(_onLoginRequested);
     on<AuthRegisterRequested>(_onRegisterRequested);

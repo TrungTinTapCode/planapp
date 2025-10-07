@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
+import '../home/home_screen.dart';
 import 'login_screen.dart';
 import 'signup_ui.dart';
 
@@ -41,13 +42,33 @@ class _SignupScreenContentState extends State<_SignupScreenContent> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BlocListener<AuthBloc, AuthState>(
+      appBar: AppBar(title: const Text('Đăng ký tài khoản')),
+      body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
-          if (state is AuthError) {
+          // Debug log (bỏ/giảm sau khi fix)
+          // ignore: avoid_print
+          print('SignupScreen listener state: $state');
+
+          if (state is AuthAuthenticated) {
+            // Khi nhận AuthAuthenticated, điều hướng tới HomeScreen
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Đăng ký thành công!')),
+            );
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const HomeScreen()),
+            );
+          } else if (state is AuthError) {
             _showErrorSnackbar(context, state.message);
           }
         },
-        child: _buildSignupContent(context),
+        builder: (context, state) {
+          if (state is AuthLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          return _buildSignupContent(context);
+        },
       ),
     );
   }
@@ -70,9 +91,7 @@ class _SignupScreenContentState extends State<_SignupScreenContent> {
             isLoading: isLoading, // ✅ Sử dụng trực tiếp
           ),
           const SizedBox(height: 20),
-          SignupUIComponents.loginLink(
-            onTap: () => _navigateToLogin(context),
-          ),
+          SignupUIComponents.loginLink(onTap: () => _navigateToLogin(context)),
         ],
       ),
     );

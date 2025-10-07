@@ -8,6 +8,7 @@ import '../../domain/usecases/login_user.dart';
 import '../../domain/usecases/register_user.dart';
 import '../../domain/usecases/logout_user.dart';
 import '../../presentation/blocs/auth/auth_bloc.dart';
+
 final sl = GetIt.instance;
 
 Future<void> initDependencies() async {
@@ -26,11 +27,8 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => RegisterUser(sl()));
   sl.registerLazySingleton(() => LogoutUser(sl()));
 
-  // Bloc
-  sl.registerFactory(() => AuthBloc(
-  loginUser: sl(),
-  registerUser: sl(),
-  logoutUser: sl(),
-));
-
+  // Bloc - provide a single AuthBloc instance for the whole app
+  sl.registerLazySingleton(
+    () => AuthBloc(loginUser: sl(), registerUser: sl(), logoutUser: sl()),
+  );
 }

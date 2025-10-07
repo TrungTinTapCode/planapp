@@ -18,10 +18,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required LoginUser loginUser,
     required RegisterUser registerUser,
     required LogoutUser logoutUser,
-  })  : _loginUser = loginUser,
-        _registerUser = registerUser,
-        _logoutUser = logoutUser,
-        super(AuthInitial()) {
+  }) : _loginUser = loginUser,
+       _registerUser = registerUser,
+       _logoutUser = logoutUser,
+       super(AuthInitial()) {
     // Đăng ký các event handlers
     on<AuthLoginRequested>(_onLoginRequested);
     on<AuthRegisterRequested>(_onRegisterRequested);
@@ -34,10 +34,19 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(AuthLoading());
+    // Debug: log receipt of login event
+    // ignore: avoid_print
+    print('AuthBloc: LoginRequested -> email=${event.email}');
     try {
       final user = await _loginUser.execute(event.email, event.password);
+      // Debug: successful login
+      // ignore: avoid_print
+      print('AuthBloc: LoginUser returned user id=${user.id}');
       emit(AuthAuthenticated(user));
-    } catch (e) {
+    } catch (e, st) {
+      // Debug: print error
+      // ignore: avoid_print
+      print('AuthBloc: Login error: $e\n$st');
       emit(AuthError(e.toString()));
     }
   }
@@ -48,14 +57,25 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(AuthLoading());
+    // Debug: log receipt of register event
+    // ignore: avoid_print
+    print(
+      'AuthBloc: RegisterRequested -> email=${event.email}, name=${event.name}',
+    );
     try {
       final user = await _registerUser.execute(
-        event.email, 
-        event.password, 
-        event.name
+        event.email,
+        event.password,
+        event.name,
       );
+      // Debug: successful usecase result
+      // ignore: avoid_print
+      print('AuthBloc: RegisterUser returned user id=${user.id}');
       emit(AuthAuthenticated(user));
-    } catch (e) {
+    } catch (e, st) {
+      // Debug: print error and stack
+      // ignore: avoid_print
+      print('AuthBloc: Register error: $e\n$st');
       emit(AuthError(e.toString()));
     }
   }
@@ -66,10 +86,19 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(AuthLoading());
+    // Debug: logout requested
+    // ignore: avoid_print
+    print('AuthBloc: LogoutRequested');
     try {
       await _logoutUser.execute();
+      // ignore: avoid_print
+      print('AuthBloc: Logout executed');
       emit(AuthLoggedOut());
-    } catch (e) {
+      // After logging out, also emit AuthInitial to reset state consumers if needed
+      emit(AuthInitial());
+    } catch (e, st) {
+      // ignore: avoid_print
+      print('AuthBloc: Logout error: $e\n$st');
       emit(AuthError(e.toString()));
     }
   }

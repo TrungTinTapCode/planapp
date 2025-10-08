@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'core/di/injection.dart';
 import 'presentation/blocs/auth/auth_bloc.dart';
 import 'presentation/blocs/auth/auth_state.dart';
+import 'presentation/blocs/project/project_bloc.dart'; // ✅ THÊM IMPORT
 import 'presentation/screens/auth/login_screen.dart';
 import 'presentation/screens/home/home_screen.dart';
 import 'firebase_options.dart';
@@ -29,6 +30,10 @@ class PlanApp extends StatelessWidget {
       providers: [
         BlocProvider<AuthBloc>(
           create: (context) => sl<AuthBloc>(),
+        ),
+        // ✅ THÊM PROJECT BLOC VÀO PROVIDERS
+        BlocProvider<ProjectBloc>(
+          create: (context) => sl<ProjectBloc>(),
         ),
       ],
       child: MaterialApp(

@@ -1,5 +1,5 @@
 // UI Components tập trung cho màn hình home
-// Vị trí: lib/presentation/widgets/home_ui_components.dart
+// Vị trí: lib/presentation/screens/home/home_ui.dart
 
 import 'package:flutter/material.dart';
 
@@ -14,6 +14,12 @@ class HomeUIComponents {
       backgroundColor: Colors.blue,
       foregroundColor: Colors.white,
       actions: [
+        // ✅ THÊM NÚT DEBUG PROJECTS
+        IconButton(
+          icon: const Icon(Icons.folder),
+          onPressed: () {}, // Sẽ được xử lý trong screen
+          tooltip: 'Dự án',
+        ),
         IconButton(
           icon: const Icon(Icons.logout),
           onPressed: onLogout,
@@ -51,7 +57,7 @@ class HomeUIComponents {
   }
 
   // Main content cho home
-  static Widget homeContent(String email, bool isLoading) {
+  static Widget homeContent(String email, bool isLoading, VoidCallback onProjectsTap) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -85,6 +91,21 @@ class HomeUIComponents {
             userInfoCard(email),
             const SizedBox(height: 20),
           ],
+          // ✅ THÊM NÚT DEBUG PROJECTS
+          Container(
+            width: 200,
+            child: ElevatedButton.icon(
+              onPressed: onProjectsTap,
+              icon: const Icon(Icons.folder_open),
+              label: const Text('Dự án của tôi'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
           // Hiển thị loading
           if (isLoading) ...[
             const CircularProgressIndicator(),

@@ -7,7 +7,8 @@ import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
 import '../auth/login_screen.dart';
-import 'home_ui.dart'; // ✅ Import từ widgets folder
+import '../project/project_list_screen.dart'; // ✅ THÊM IMPORT
+import 'home_ui.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -65,8 +66,20 @@ class _HomeContent extends StatelessWidget {
         final email = state is AuthAuthenticated ? state.user.email : '';
         final isLoading = state is AuthLoading;
         
-        return HomeUIComponents.homeContent(email, isLoading);
+        return HomeUIComponents.homeContent(
+          email, 
+          isLoading,
+          () => _navigateToProjects(context), // ✅ THÊM CALLBACK
+        );
       },
+    );
+  }
+
+  // ✅ THÊM METHOD ĐIỀU HƯỚNG ĐẾN PROJECT LIST
+  void _navigateToProjects(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ProjectListScreen()),
     );
   }
 }

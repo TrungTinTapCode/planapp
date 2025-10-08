@@ -272,7 +272,7 @@ Tài liệu này phác thảo cấu trúc các màn hình chính và luồng di 
 2.  **Màn hình Đăng nhập/Đăng ký (`AuthScreen`):** Giao diện cho người dùng đăng nhập hoặc tạo tài khoản mới.
 
 ### B. Luồng Chính (Main App Flow)
-3.  **Màn hình Chính (`MainScreen` / `ShellScreen`):** Màn hình "vỏ" chứa `BottomNavigationBar` với 4 tab chính.
+3.  **Màn hình Chính (`HomeScreen` / `ShellScreen`):** Màn hình "vỏ" chứa `BottomNavigationBar` với 4 tab chính.
 4.  **Màn hình Danh sách Dự án (`ProjectListScreen`):** Nội dung cho tab "Dự án", hiển thị các dự án mà người dùng tham gia.
 5.  **Màn hình Danh sách Tin nhắn (`MessageListScreen`):** Nội dung cho tab "Tin nhắn", hiển thị các cuộc trò chuyện trực tiếp (DM) và kênh chung.
 6.  **Màn hình Thông báo (`NotificationScreen`):** Nội dung cho tab "Thông báo".

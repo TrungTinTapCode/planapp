@@ -258,3 +258,105 @@ lib/
 - Kiểm tra test coverage cho UseCase quan trọng.  
 - Chạy `dart analyze` và `dart format`.  
 - Đảm bảo có mô tả rõ trong PR: thay đổi gì, lý do, ảnh hưởng ở đâu.
+
+# Sơ đồ cấu trúc màn hình Ứng dụng Quản lý công việc
+
+Tài liệu này phác thảo cấu trúc các màn hình chính và luồng di chuyển của người dùng (user flow) cho ứng dụng quản lý công việc nhóm, dựa trên kiến trúc kết hợp (hybrid) đã thảo luận.
+
+## I. Danh sách các màn hình chính (Screens)
+
+Ứng dụng sẽ có khoảng 10-12 màn hình cơ bản để xây dựng luồng chức năng hoàn chỉnh.
+
+### A. Luồng Xác thực (Authentication Flow)
+1.  **Màn hình Splash (`SplashScreen`):** Màn hình chờ ban đầu, kiểm tra trạng thái đăng nhập để điều hướng.
+2.  **Màn hình Đăng nhập/Đăng ký (`AuthScreen`):** Giao diện cho người dùng đăng nhập hoặc tạo tài khoản mới.
+
+### B. Luồng Chính (Main App Flow)
+3.  **Màn hình Chính (`MainScreen` / `ShellScreen`):** Màn hình "vỏ" chứa `BottomNavigationBar` với 4 tab chính.
+4.  **Màn hình Danh sách Dự án (`ProjectListScreen`):** Nội dung cho tab "Dự án", hiển thị các dự án mà người dùng tham gia.
+5.  **Màn hình Danh sách Tin nhắn (`MessageListScreen`):** Nội dung cho tab "Tin nhắn", hiển thị các cuộc trò chuyện trực tiếp (DM) và kênh chung.
+6.  **Màn hình Thông báo (`NotificationScreen`):** Nội dung cho tab "Thông báo".
+7.  **Màn hình Cá nhân (`ProfileScreen`):** Nội dung cho tab "Cá nhân", quản lý thông tin tài khoản và cài đặt.
+
+### C. Luồng Chi tiết & Chức năng (Detail & Feature Flow)
+8.  **Màn hình Chi tiết Dự án (`ProjectDetailScreen`):** Màn hình "vỏ" cho một dự án cụ thể, chứa `TabBar` bên trong để chuyển đổi giữa các mục (Công việc, Thảo luận, Tài liệu).
+9.  **Màn hình Chi tiết Công việc (`TaskDetailScreen`):** Hiển thị đầy đủ thông tin của một công việc: checklist, bình luận, người thực hiện, file đính kèm...
+10. **Màn hình Trò chuyện (`ChatScreen`):** Giao diện chi tiết của một cuộc trò chuyện (tái sử dụng cho cả chat trong dự án và chat riêng).
+
+### D. Luồng Tạo mới (Creation Flow)
+11. **Màn hình Tạo Dự án (`CreateProjectScreen`):** Form để nhập thông tin và tạo một dự án mới.
+12. **Màn hình Tạo Công việc (`CreateTaskScreen`):** Form để tạo một công việc mới trong một dự án.
+
+---
+
+### E. Sơ đồ liên kết giữa các màn hình (User Flow)
+
+
+```mermaid
+graph TD
+    subgraph App Start
+        A[SplashScreen]
+    end
+
+    subgraph Authentication
+        B[AuthScreen]
+    end
+
+    subgraph Main App
+        C[HomeScreen]
+        subgraph BottomNavBar Tabs
+            C1[Tab: Dự án]
+            C2[Tab: Tin nhắn]
+            C3[Tab: Thông báo]
+            C4[Tab: Cá nhân]
+        end
+    end
+
+    subgraph Project Flow
+        D[ProjectListScreen]
+        E[ProjectDetailScreen]
+        F[TaskList View]
+        G[ProjectChat View]
+        H[FileList View]
+        I[TaskDetailScreen]
+        J[CreateProjectScreen]
+        K[CreateTaskScreen]
+    end
+
+    subgraph Messaging Flow
+        L[MessageListScreen]
+        M[DirectChatScreen]
+    end
+    
+    subgraph Profile Flow
+        N[ProfileScreen]
+        O[SettingsScreen]
+    end
+
+    %% --- App Start Flow ---
+    A -- Đã đăng nhập --> C
+    A -- Chưa đăng nhập --> B
+    B -- Đăng nhập/Đăng ký thành công --> C
+
+    %% --- Main Navigation Flow ---
+    C -- Chọn tab "Dự án" --> D
+    C -- Chọn tab "Tin nhắn" --> L
+    C -- Chọn tab "Thông báo" --> C3
+    C -- Chọn tab "Cá nhân" --> N
+
+    %% --- Project Feature Flow ---
+    D -- Bấm nút (+) Tạo dự án --> J
+    J -- Tạo thành công --> D
+    D -- Chọn một dự án --> E
+
+    E -- Chứa các tab --> F & G & H
+    F -- Bấm nút (+) Tạo task --> K
+    K -- Tạo thành công --> F
+    F -- Chọn một task --> I
+
+    %% --- Messaging Feature Flow ---
+    L -- Chọn một cuộc trò chuyện --> M
+
+    %% --- Profile Feature Flow ---
+    N -- Bấm nút "Đăng xuất" --> B
+    N -- Bấm "Cài đặt" --> O

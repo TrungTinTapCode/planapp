@@ -6,7 +6,7 @@ class GetCurrentUser {
 
   GetCurrentUser(this._authRepository);
 
-  UserEntity? execute() {
+  User? execute() {
     return _authRepository.getCurrentUser();
   }
 }

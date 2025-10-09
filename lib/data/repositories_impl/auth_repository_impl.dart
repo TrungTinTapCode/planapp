@@ -13,12 +13,12 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   // Đăng nhập người dùng - chuyển tiếp yêu cầu đến AuthService
-  Future<UserEntity> login(String email, String password) =>
+  Future<User> login(String email, String password) =>
       _authService.login(email: email, password: password);
 
   @override
   // Đăng ký người dùng mới - chuyển tiếp yêu cầu đến AuthService
-  Future<UserEntity> register(String email, String password, String name) =>
+  Future<User> register(String email, String password, String name) =>
       _authService.register(email: email, password: password, name: name);
 
   @override
@@ -27,5 +27,5 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   // Lấy thông tin người dùng hiện tại từ AuthService
-  UserEntity? getCurrentUser() => _authService.currentUser;
+  User? getCurrentUser() => _authService.currentUser;
 }

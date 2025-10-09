@@ -11,7 +11,7 @@ class RegisterUser {
   RegisterUser(this._authRepository);
 
   // Thực hiện đăng ký user mới với email, password và name
-  Future<UserEntity> execute(String email, String password, String name) async {
+  Future<User> execute(String email, String password, String name) async {
     return await _authRepository.register(email, password, name);
   }
 }

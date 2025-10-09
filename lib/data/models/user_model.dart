@@ -1,34 +1,32 @@
 /// Mục đích: Model dữ liệu cho User (data layer).
 /// Vị trí: lib/data/models/user_model.dart
 
-// TODO: Định nghĩa UserModel
+import 'package:planapp/domain/entities/user.dart';
 
-import '../../domain/entities/user.dart';
-
-/// Model ánh xạ dữ liệu người dùng từ Firebase.
-class UserModel extends UserEntity {
+/// Model ánh xạ dữ liệu người dùng từ Firestore
+class UserModel extends User {
   const UserModel({
     required super.id,
+    required super.displayName,
     required super.email,
-    super.name,
-    super.role,
+    super.photoUrl,
   });
 
-  factory UserModel.fromMap(Map<String, dynamic> map) {
+  factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: map['id'] ?? '',
-      email: map['email'] ?? '',
-      name: map['name'],
-      role: map['role'],
+      id: json['id'] as String,
+      displayName: json['displayName'] as String,
+      email: json['email'] as String,
+      photoUrl: json['photoUrl'] as String?,
     );
   }
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'displayName': displayName,
       'email': email,
-      'name': name,
-      'role': role,
+      'photoUrl': photoUrl,
     };
   }
 }

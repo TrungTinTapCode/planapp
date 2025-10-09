@@ -11,7 +11,7 @@ class LoginUser {
   LoginUser(this._authRepository);
 
   // Thực hiện đăng nhập với email và password
-  Future<UserEntity> execute(String email, String password) async {
+  Future<User> execute(String email, String password) async {
     return await _authRepository.login(email, password);
   }
 }

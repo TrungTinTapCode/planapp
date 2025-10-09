@@ -9,14 +9,15 @@ import '../../blocs/project/project_event.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_state.dart';
 import 'project_detail_ui.dart';
+import '../../blocs/task/task_bloc.dart';
+import '../../blocs/task/task_event.dart';
+import '../task/create_task_screen.dart';
+import '../task/task_list_screen.dart';
 
 class ProjectDetailScreen extends StatelessWidget {
   final ProjectEntity project;
 
-  const ProjectDetailScreen({
-    super.key,
-    required this.project,
-  });
+  const ProjectDetailScreen({super.key, required this.project});
 
   @override
   Widget build(BuildContext context) {
@@ -33,16 +34,29 @@ class _ProjectDetailScreenContent extends StatefulWidget {
   const _ProjectDetailScreenContent({required this.project});
 
   @override
-  State<_ProjectDetailScreenContent> createState() => _ProjectDetailScreenContentState();
+  State<_ProjectDetailScreenContent> createState() =>
+      _ProjectDetailScreenContentState();
 }
 
-class _ProjectDetailScreenContentState extends State<_ProjectDetailScreenContent> with SingleTickerProviderStateMixin {
+class _ProjectDetailScreenContentState
+    extends State<_ProjectDetailScreenContent>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    // Load tasks for this project when the screen opens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Use the TaskBloc to load tasks scoped to this project
+      try {
+        final taskBloc = context.read<TaskBloc>();
+        taskBloc.add(LoadTasksRequested(widget.project.id));
+      } catch (_) {
+        // If TaskBloc is not provided above in the tree, ignore silently.
+      }
+    });
   }
 
   @override
@@ -73,11 +87,7 @@ class _ProjectDetailScreenContentState extends State<_ProjectDetailScreenContent
         Expanded(
           child: TabBarView(
             controller: _tabController,
-            children: [
-              _buildTasksTab(),
-              _buildMembersTab(),
-              _buildFilesTab(),
-            ],
+            children: [_buildTasksTab(), _buildMembersTab(), _buildFilesTab()],
           ),
         ),
       ],
@@ -98,9 +108,8 @@ class _ProjectDetailScreenContentState extends State<_ProjectDetailScreenContent
           ),
           const SizedBox(height: 16),
           Expanded(
-            child: ProjectDetailUI.emptyTasksState(
-              onAddTask: () => _handleAddTask(context),
-            ),
+            // Show the real Task list for this project
+            child: TaskListScreen(projectId: widget.project.id),
           ),
         ],
       ),
@@ -125,7 +134,8 @@ class _ProjectDetailScreenContentState extends State<_ProjectDetailScreenContent
               members: widget.project.memberIds,
               currentUserId: _getCurrentUserId(),
               isOwner: _isCurrentUserOwner(),
-              onRemoveMember: (memberId) => _handleRemoveMember(context, memberId),
+              onRemoveMember:
+                  (memberId) => _handleRemoveMember(context, memberId),
             ),
           ),
         ],
@@ -160,10 +170,11 @@ class _ProjectDetailScreenContentState extends State<_ProjectDetailScreenContent
   void _handleAddMember(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => ProjectDetailUI.addMemberDialog(
-        context: context,
-        onAddMember: (email) => _addMemberByEmail(context, email),
-      ),
+      builder:
+          (context) => ProjectDetailUI.addMemberDialog(
+            context: context,
+            onAddMember: (email) => _addMemberByEmail(context, email),
+          ),
     );
   }
 
@@ -172,14 +183,14 @@ class _ProjectDetailScreenContentState extends State<_ProjectDetailScreenContent
     // TODO: Implement logic tìm user bằng email và thêm vào project
     // Tạm thời mock với memberId
     final memberId = 'mock_member_${DateTime.now().millisecondsSinceEpoch}';
-    
+
     context.read<ProjectBloc>().add(
       ProjectAddMemberRequested(
         projectId: widget.project.id,
         memberId: memberId,
       ),
     );
-    
+
     Navigator.pop(context);
     _showSuccessSnackbar(context, 'Đã gửi lời mời tham gia dự án');
   }
@@ -193,27 +204,42 @@ class _ProjectDetailScreenContentState extends State<_ProjectDetailScreenContent
 
     showDialog(
       context: context,
-      builder: (context) => ProjectDetailUI.removeMemberDialog(
-        context: context,
-        onConfirm: () {
-          // TODO: Implement remove member logic
-          Navigator.pop(context);
-          _showSuccessSnackbar(context, 'Đã xóa thành viên khỏi dự án');
-        },
-      ),
+      builder:
+          (context) => ProjectDetailUI.removeMemberDialog(
+            context: context,
+            onConfirm: () {
+              // TODO: Implement remove member logic
+              Navigator.pop(context);
+              _showSuccessSnackbar(context, 'Đã xóa thành viên khỏi dự án');
+            },
+          ),
     );
   }
 
   // Xử lý thêm task
   void _handleAddTask(BuildContext context) {
-    // TODO: Implement navigate to create task screen
-    _showInfoSnackbar(context, 'Tính năng thêm task sẽ có trong phiên bản tiếp theo');
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute(
+            builder: (_) => CreateTaskScreen(projectId: widget.project.id),
+          ),
+        )
+        .then((created) {
+          if (created == true) {
+            // Rebuild to recreate TaskListScreen which will reload tasks
+            setState(() {});
+            _showSuccessSnackbar(context, 'Tạo task thành công');
+          }
+        });
   }
 
   // Xử lý thêm file
   void _handleAddFile(BuildContext context) {
     // TODO: Implement file upload logic
-    _showInfoSnackbar(context, 'Tính năng upload file sẽ có trong phiên bản tiếp theo');
+    _showInfoSnackbar(
+      context,
+      'Tính năng upload file sẽ có trong phiên bản tiếp theo',
+    );
   }
 
   // Lấy current user ID
@@ -233,30 +259,21 @@ class _ProjectDetailScreenContentState extends State<_ProjectDetailScreenContent
   // Hiển thị thông báo thành công
   void _showSuccessSnackbar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-      ),
+      SnackBar(content: Text(message), backgroundColor: Colors.green),
     );
   }
 
   // Hiển thị thông báo lỗi
   void _showErrorSnackbar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
     );
   }
 
   // Hiển thị thông báo thông tin
   void _showInfoSnackbar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.blue,
-      ),
+      SnackBar(content: Text(message), backgroundColor: Colors.blue),
     );
   }
 
@@ -264,24 +281,32 @@ class _ProjectDetailScreenContentState extends State<_ProjectDetailScreenContent
   void _handleDelete(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Xóa dự án'),
-        content: const Text('Bạn có chắc muốn xóa dự án này? Hành động không thể hoàn tác.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Hủy')),
-          ElevatedButton(
-            onPressed: () {
-              // Gửi event xóa project cho bloc
-              context.read<ProjectBloc>().add(ProjectDeleteRequested(widget.project.id));
-              Navigator.pop(context);
-              Navigator.pop(context); // thoát màn hình chi tiết
-              _showSuccessSnackbar(context, 'Đã xóa dự án');
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Xóa'),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Xóa dự án'),
+            content: const Text(
+              'Bạn có chắc muốn xóa dự án này? Hành động không thể hoàn tác.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Hủy'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  // Gửi event xóa project cho bloc
+                  context.read<ProjectBloc>().add(
+                    ProjectDeleteRequested(widget.project.id),
+                  );
+                  Navigator.pop(context);
+                  Navigator.pop(context); // thoát màn hình chi tiết
+                  _showSuccessSnackbar(context, 'Đã xóa dự án');
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                child: const Text('Xóa'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 }

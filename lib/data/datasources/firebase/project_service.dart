@@ -52,4 +52,21 @@ class ProjectService {
       'memberIds': FieldValue.arrayRemove([memberId]),
     });
   }
+
+  /// Lấy danh sách user models của các member trong project
+  Future<List<Map<String, dynamic>>> getMembers(String projectId) async {
+    final doc = await _firestore.collection('projects').doc(projectId).get();
+    if (!doc.exists) return [];
+    final data = doc.data()!;
+    final List<dynamic> memberIds = data['memberIds'] ?? [];
+    final users = <Map<String, dynamic>>[];
+    for (final id in memberIds) {
+      final udoc = await _firestore.collection('users').doc(id as String).get();
+      if (udoc.exists) {
+        final udata = udoc.data()!;
+        users.add({...udata, 'id': udoc.id});
+      }
+    }
+    return users;
+  }
 }

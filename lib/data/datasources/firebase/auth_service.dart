@@ -29,7 +29,25 @@ class AuthService {
     // Debug: sau khi signIn
     // ignore: avoid_print
     print('AuthService.login: signed in uid=${user.uid}');
-    return UserModel(id: user.uid, email: user.email ?? '');
+
+    // Cố gắng đọc profile người dùng từ collection 'users'
+    final doc = await _firestore.collection('users').doc(user.uid).get();
+    if (doc.exists) {
+      final data = doc.data()!;
+      return UserModel.fromJson({
+        'id': user.uid,
+        'displayName': data['displayName'] ?? data['name'] ?? '',
+        'email': user.email ?? data['email'] ?? '',
+        'photoUrl': data['photoUrl'],
+      });
+    }
+
+    return UserModel(
+      id: user.uid,
+      displayName: user.displayName ?? user.email ?? '',
+      email: user.email ?? '',
+      photoUrl: user.photoURL,
+    );
   }
 
   // Đăng ký tài khoản người dùng mới
@@ -58,7 +76,7 @@ class AuthService {
     await _firestore.collection('users').doc(user.uid).set({
       'id': user.uid,
       'email': email,
-      'name': name,
+      'displayName': name,
       'role': 'member',
     });
 
@@ -66,7 +84,12 @@ class AuthService {
     // ignore: avoid_print
     print('AuthService.register: firestore write complete uid=${user.uid}');
 
-    return UserModel(id: user.uid, email: email, name: name);
+    return UserModel(
+      id: user.uid,
+      displayName: name,
+      email: email,
+      photoUrl: null,
+    );
   }
 
   // Đăng xuất người dùng khỏi Firebase Auth
@@ -84,6 +107,13 @@ class AuthService {
   UserModel? get currentUser {
     final user = _auth.currentUser;
     if (user == null) return null;
-    return UserModel(id: user.uid, email: user.email ?? '');
+
+    // Nếu có document ở Firestore, lấy displayName/photoUrl từ đó
+    return UserModel(
+      id: user.uid,
+      displayName: user.displayName ?? user.email ?? '',
+      email: user.email ?? '',
+      photoUrl: user.photoURL,
+    );
   }
 }

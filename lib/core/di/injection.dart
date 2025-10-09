@@ -4,8 +4,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../data/datasources/firebase/auth_service.dart';
 import '../../data/datasources/firebase/project_service.dart';
+import '../../data/datasources/firebase/task_service.dart';
 import '../../data/repositories_impl/auth_repository_impl.dart';
 import '../../data/repositories_impl/project_repository_impl.dart';
+import '../../data/repositories_impl/task_repository_impl.dart';
 
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/repositories/project_repository.dart';
@@ -21,8 +23,17 @@ import '../../domain/usecases/project/update_project.dart';
 import '../../domain/usecases/project/delete_project.dart';
 import '../../domain/usecases/project/add_member_to_project.dart';
 
+import '../../domain/usecases/task/create_task.dart';
+import '../../domain/usecases/task/update_task.dart';
+import '../../domain/usecases/task/delete_task.dart';
+import '../../domain/usecases/task/get_tasks_by_project.dart';
+import '../../domain/usecases/task/assign_task.dart';
+import '../../domain/usecases/task/set_task_completed.dart';
+import '../../domain/usecases/task/get_task_by_id.dart';
+
 import '../../presentation/blocs/auth/auth_bloc.dart';
 import '../../presentation/blocs/project/project_bloc.dart';
+import '../../presentation/blocs/task/task_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -34,10 +45,14 @@ Future<void> initDependencies() async {
   // ✅ Services
   sl.registerLazySingleton(() => AuthService(sl(), sl()));
   sl.registerLazySingleton(() => ProjectService(sl()));
+  sl.registerLazySingleton(() => TaskService(sl()));
 
   // ✅ Repositories
   sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(sl()));
-  sl.registerLazySingleton<ProjectRepository>(() => ProjectRepositoryImpl(sl()));
+  sl.registerLazySingleton<ProjectRepository>(
+    () => ProjectRepositoryImpl(sl()),
+  );
+  sl.registerLazySingleton(() => TaskRepositoryImpl(sl()));
 
   // ✅ Auth UseCases
   sl.registerLazySingleton(() => LoginUser(sl()));
@@ -51,6 +66,15 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => UpdateProject(sl()));
   sl.registerLazySingleton(() => DeleteProject(sl()));
   sl.registerLazySingleton(() => AddMemberToProject(sl()));
+
+  // ✅ Task UseCases
+  sl.registerLazySingleton(() => CreateTask(sl()));
+  sl.registerLazySingleton(() => UpdateTask(sl()));
+  sl.registerLazySingleton(() => DeleteTask(sl()));
+  sl.registerLazySingleton(() => GetTasksByProject(sl()));
+  sl.registerLazySingleton(() => AssignTask(sl()));
+  sl.registerLazySingleton(() => SetTaskCompleted(sl()));
+  sl.registerLazySingleton(() => GetTaskById(sl()));
 
   // ✅ Blocs
   sl.registerLazySingleton(
@@ -69,6 +93,18 @@ Future<void> initDependencies() async {
       updateProject: sl(),
       deleteProject: sl(),
       addMemberToProject: sl(),
+    ),
+  );
+
+  sl.registerFactory(
+    () => TaskBloc(
+      createTask: sl(),
+      updateTask: sl(),
+      deleteTask: sl(),
+      getTasksByProject: sl(),
+      assignTask: sl(),
+      setTaskCompleted: sl(),
+      getTaskById: sl(),
     ),
   );
 }

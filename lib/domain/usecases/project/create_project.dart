@@ -1,8 +1,8 @@
 /// UseCase cho việc tạo project mới
 /// Vị trí: lib/domain/usecases/create_project.dart
 
-import '../entities/project.dart';
-import '../repositories/project_repository.dart';
+import '../../entities/project.dart';
+import '../../repositories/project_repository.dart';
 
 class CreateProject {
   final ProjectRepository _projectRepository;

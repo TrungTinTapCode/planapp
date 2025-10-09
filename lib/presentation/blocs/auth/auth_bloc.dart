@@ -2,10 +2,10 @@
 // Vị trí: lib/presentation/blocs/auth/auth_bloc.dart
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../domain/usecases/login_user.dart';
-import '../../../domain/usecases/register_user.dart';
-import '../../../domain/usecases/logout_user.dart';
-import '../../../domain/usecases/get_current_user.dart';
+import '../../../domain/usecases/user/login_user.dart';
+import '../../../domain/usecases/user/register_user.dart';
+import '../../../domain/usecases/user/logout_user.dart';
+import '../../../domain/usecases/user/get_current_user.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 

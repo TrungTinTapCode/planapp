@@ -10,16 +10,16 @@ import '../../data/repositories_impl/project_repository_impl.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/repositories/project_repository.dart';
 
-import '../../domain/usecases/login_user.dart';
-import '../../domain/usecases/register_user.dart';
-import '../../domain/usecases/logout_user.dart';
-import '../../domain/usecases/get_current_user.dart';
+import '../../domain/usecases/user/login_user.dart';
+import '../../domain/usecases/user/register_user.dart';
+import '../../domain/usecases/user/logout_user.dart';
+import '../../domain/usecases/user/get_current_user.dart';
 
-import '../../domain/usecases/create_project.dart';
-import '../../domain/usecases/get_projects.dart';
-import '../../domain/usecases/update_project.dart';
-import '../../domain/usecases/delete_project.dart';
-import '../../domain/usecases/add_member_to_project.dart';
+import '../../domain/usecases/project/create_project.dart';
+import '../../domain/usecases/project/get_projects.dart';
+import '../../domain/usecases/project/update_project.dart';
+import '../../domain/usecases/project/delete_project.dart';
+import '../../domain/usecases/project/add_member_to_project.dart';
 
 import '../../presentation/blocs/auth/auth_bloc.dart';
 import '../../presentation/blocs/project/project_bloc.dart';

@@ -2,11 +2,11 @@
 /// Vị trí: lib/presentation/blocs/project/project_bloc.dart
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../domain/usecases/create_project.dart';
-import '../../../domain/usecases/get_projects.dart';
-import '../../../domain/usecases/update_project.dart';
-import '../../../domain/usecases/delete_project.dart';
-import '../../../domain/usecases/add_member_to_project.dart';
+import '../../../domain/usecases/project/create_project.dart';
+import '../../../domain/usecases/project/get_projects.dart';
+import '../../../domain/usecases/project/update_project.dart';
+import '../../../domain/usecases/project/delete_project.dart';
+import '../../../domain/usecases/project/add_member_to_project.dart';
 import 'project_event.dart';
 import 'project_state.dart';
 

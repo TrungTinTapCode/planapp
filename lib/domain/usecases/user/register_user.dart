@@ -1,8 +1,8 @@
 // UseCase xử lý việc đăng ký tài khoản người dùng mới
 // Vị trí: lib/domain/usecases/register_user.dart
 
-import '../entities/user.dart';
-import '../repositories/auth_repository.dart';
+import '../../entities/user.dart';
+import '../../repositories/auth_repository.dart';
 
 class RegisterUser {
   final AuthRepository _authRepository;

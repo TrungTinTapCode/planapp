@@ -1,7 +1,7 @@
 /// UseCase cho việc thêm member vào project
 /// Vị trí: lib/domain/usecases/add_member_to_project.dart
 
-import '../repositories/project_repository.dart';
+import '../../repositories/project_repository.dart';
 
 class AddMemberToProject {
   final ProjectRepository _projectRepository;

@@ -1,8 +1,8 @@
 // UseCase xử lý việc đăng nhập người dùng
 // Vị trí: lib/domain/usecases/login_user.dart
 
-import '../entities/user.dart';
-import '../repositories/auth_repository.dart';
+import '../../entities/user.dart';
+import '../../repositories/auth_repository.dart';
 
 class LoginUser {
   final AuthRepository _authRepository;

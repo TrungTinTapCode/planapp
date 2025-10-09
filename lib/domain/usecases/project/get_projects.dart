@@ -1,8 +1,8 @@
 /// UseCase cho việc lấy danh sách projects của user
 /// Vị trí: lib/domain/usecases/get_projects.dart
 
-import '../entities/project.dart';
-import '../repositories/project_repository.dart';
+import '../../entities/project.dart';
+import '../../repositories/project_repository.dart';
 
 class GetProjects {
   final ProjectRepository _projectRepository;

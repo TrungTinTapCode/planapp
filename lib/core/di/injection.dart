@@ -11,6 +11,7 @@ import '../../data/repositories_impl/task_repository_impl.dart';
 
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/repositories/project_repository.dart';
+import '../../domain/repositories/task_repository.dart';
 
 import '../../domain/usecases/user/login_user.dart';
 import '../../domain/usecases/user/register_user.dart';
@@ -49,10 +50,8 @@ Future<void> initDependencies() async {
 
   // ✅ Repositories
   sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(sl()));
-  sl.registerLazySingleton<ProjectRepository>(
-    () => ProjectRepositoryImpl(sl()),
-  );
-  sl.registerLazySingleton(() => TaskRepositoryImpl(sl()));
+  sl.registerLazySingleton<ProjectRepository>(() => ProjectRepositoryImpl(sl()),);
+  sl.registerLazySingleton<TaskRepository>(() => TaskRepositoryImpl(sl()));;
 
   // ✅ Auth UseCases
   sl.registerLazySingleton(() => LoginUser(sl()));

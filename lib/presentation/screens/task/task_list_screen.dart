@@ -1,14 +1,17 @@
+// Mục đích: Màn hình danh sách Task - Logic và State Management
+// Vị trí: lib/presentation/screens/task/task_list_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/di/injection.dart';
+import '../../../domain/entities/task.dart';
 import '../../blocs/task/task_bloc.dart';
 import '../../blocs/task/task_event.dart';
 import '../../blocs/task/task_state.dart';
 import 'create_task_screen.dart';
 import 'task_detail_screen.dart';
+import 'task_list_ui.dart';
 
-/// Mục đích: Màn hình danh sách Task.
-/// Vị trí: lib/presentation/screens/task/task_list_screen.dart
 class TaskListScreen extends StatelessWidget {
   final String projectId;
 
@@ -19,91 +22,91 @@ class TaskListScreen extends StatelessWidget {
     return BlocProvider(
       create: (_) => sl<TaskBloc>()..add(LoadTasksRequested(projectId)),
       child: Scaffold(
-        appBar: AppBar(title: const Text('Tasks')),
-        body: BlocBuilder<TaskBloc, TaskState>(
-          builder: (context, state) {
-            if (state is TaskLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
+        appBar: TaskListUIComponents.taskListAppBar(title: 'Tasks'),
+        body: const _TaskListBody(),
+        floatingActionButton: const _CreateTaskFAB(),
+      ),
+    );
+  }
+}
 
-            if (state is TasksLoadSuccess) {
-              final tasks = state.tasks;
-              if (tasks.isEmpty) {
-                return const Center(child: Text('No tasks yet'));
-              }
-              return ListView.separated(
-                itemCount: tasks.length,
-                separatorBuilder: (_, __) => const Divider(height: 1),
-                itemBuilder: (context, index) {
-                  final t = tasks[index];
-                  return ListTile(
-                    title: Text(t.title),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(t.description),
-                        const SizedBox(height: 6),
-                        if (t.tags.isNotEmpty)
-                          Wrap(
-                            spacing: 6,
-                            runSpacing: 6,
-                            children:
-                                t.tags
-                                    .map(
-                                      (tag) => Chip(
-                                        label: Text(tag),
-                                        visualDensity: VisualDensity.compact,
-                                      ),
-                                    )
-                                    .toList(),
-                          ),
-                      ],
-                    ),
-                    trailing:
-                        t.isCompleted
-                            ? const Icon(
-                              Icons.check_circle,
-                              color: Colors.green,
-                            )
-                            : null,
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder:
-                              (_) => TaskDetailScreen(
-                                projectId: projectId,
-                                taskId: t.id,
-                              ),
-                        ),
-                      );
-                    },
-                  );
-                },
-              );
-            }
+// Widget cho phần body của task list
+class _TaskListBody extends StatelessWidget {
+  const _TaskListBody();
 
-            if (state is TaskOperationFailure) {
-              return Center(child: Text('Error: ${state.message}'));
-            }
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<TaskBloc, TaskState>(
+      builder: (context, state) {
+        // Xử lý loading state
+        if (state is TaskLoading) {
+          return TaskListUIComponents.loadingIndicator();
+        }
 
-            return const SizedBox.shrink();
-          },
-        ),
-        floatingActionButton: FloatingActionButton(
-          child: const Icon(Icons.add),
-          onPressed: () async {
-            final created = await Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => CreateTaskScreen(projectId: projectId),
-              ),
-            );
-            if (created == true) {
-              // refresh list
-              context.read<TaskBloc>().add(LoadTasksRequested(projectId));
-            }
-          },
+        // Xử lý success state
+        if (state is TasksLoadSuccess) {
+          final tasks = state.tasks;
+          
+          // Xử lý empty state
+          if (tasks.isEmpty) {
+            return TaskListUIComponents.emptyState();
+          }
+
+          // Hiển thị danh sách tasks
+          return TaskListUIComponents.taskListView(
+            tasks: tasks,
+            onTaskTap: (task) => _navigateToTaskDetail(context, task),
+          );
+        }
+
+        // Xử lý error state
+        if (state is TaskOperationFailure) {
+          return TaskListUIComponents.errorState(state.message);
+        }
+
+        // Default state
+        return const SizedBox.shrink();
+      },
+    );
+  }
+
+  // Điều hướng đến màn hình chi tiết task
+  void _navigateToTaskDetail(BuildContext context, Task task) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => TaskDetailScreen(
+          projectId: task.projectId,
+          taskId: task.id,
         ),
       ),
     );
+  }
+}
+
+// Widget cho Floating Action Button tạo task mới
+class _CreateTaskFAB extends StatelessWidget {
+  const _CreateTaskFAB();
+
+  @override
+  Widget build(BuildContext context) {
+    final projectId = (context.findAncestorWidgetOfExactType<TaskListScreen>()?.projectId) ?? '';
+
+    return TaskListUIComponents.createTaskFAB(
+      onPressed: () => _navigateToCreateTask(context, projectId),
+    );
+  }
+
+  // Điều hướng đến màn hình tạo task mới
+  void _navigateToCreateTask(BuildContext context, String projectId) async {
+    final created = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CreateTaskScreen(projectId: projectId),
+      ),
+    );
+    
+    // Refresh list nếu task được tạo thành công
+    if (created == true) {
+      context.read<TaskBloc>().add(LoadTasksRequested(projectId));
+    }
   }
 }

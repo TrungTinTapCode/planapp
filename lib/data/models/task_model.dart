@@ -2,9 +2,9 @@
 /// Vị trí: lib/data/models/task_model.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:planapp/data/models/user_model.dart';
 import 'package:planapp/domain/entities/task.dart';
 import 'package:planapp/domain/entities/task_priority.dart';
+import 'package:planapp/domain/entities/user.dart';
 
 /// Model đại diện cho Task trong tầng data, hỗ trợ JSON serialization
 class TaskModel extends Task {
@@ -39,13 +39,13 @@ class TaskModel extends Task {
               : TaskPriority.medium,
       assignee:
           json['assignee'] != null
-              ? UserModel.fromJson(Map<String, dynamic>.from(json['assignee']))
+              ? _userFromJson(json['assignee']) // ✅ SỬA: Dùng helper function
               : null,
       createdAt:
           json['createdAt'] != null
               ? (json['createdAt'] as Timestamp).toDate()
               : DateTime.now(),
-      creator: UserModel.fromJson(Map<String, dynamic>.from(json['creator'])),
+      creator: _userFromJson(json['creator']), // ✅ SỬA: Dùng helper function
       isCompleted: json['isCompleted'] as bool? ?? false,
     );
   }
@@ -59,9 +59,9 @@ class TaskModel extends Task {
       'deadline': deadline != null ? Timestamp.fromDate(deadline!) : null,
       'tags': tags,
       'priority': priority.name,
-      'assignee': assignee != null ? (assignee as UserModel).toJson() : null,
+      'assignee': assignee != null ? _userToJson(assignee!) : null, // ✅ SỬA: Dùng helper function
       'createdAt': Timestamp.fromDate(createdAt),
-      'creator': (creator as UserModel).toJson(),
+      'creator': _userToJson(creator), // ✅ SỬA: Dùng helper function
       'isCompleted': isCompleted,
     };
   }
@@ -79,6 +79,25 @@ class TaskModel extends Task {
       createdAt: task.createdAt,
       creator: task.creator,
       isCompleted: task.isCompleted,
+    );
+  }
+
+  // ✅ Helper function: Convert User entity sang Map
+  static Map<String, dynamic> _userToJson(User user) {
+    return {
+      'id': user.id,
+      'displayName': user.displayName,
+      'email': user.email,
+    };
+  }
+
+  // ✅ Helper function: Convert Map sang User entity
+  static User _userFromJson(dynamic userData) {
+    final Map<String, dynamic> userMap = Map<String, dynamic>.from(userData);
+    return User(
+      id: userMap['id'] as String,
+      displayName: userMap['displayName'] as String,
+      email: userMap['email'] as String,
     );
   }
 }

@@ -3,7 +3,7 @@
 
 import 'package:flutter/material.dart';
 import '../../../domain/entities/task_priority.dart';
-import '../../../data/models/user_model.dart';
+import '../../../domain/entities/user.dart';
 
 class CreateTaskUIComponents {
   // AppBar cho màn hình tạo task
@@ -29,17 +29,18 @@ class CreateTaskUIComponents {
     required TextEditingController descriptionController,
     required DateTime? deadline,
     required TaskPriority priority,
-    required List<UserModel> members,
-    required UserModel? selectedAssignee,
+    required List<User> members,
+    required User? selectedAssignee,
     required List<String> tags,
     required TextEditingController tagsController,
     required Function(DateTime?) onDeadlineChanged,
     required Function(TaskPriority) onPriorityChanged,
-    required Function(UserModel?) onAssigneeChanged,
+    required Function(User?) onAssigneeChanged,
     required Function(String) onTagAdded,
     required Function(String) onTagRemoved,
     required VoidCallback onCreateTask,
     required bool isLoading,
+    required BuildContext context, // ✅ THÊM CONTEXT PARAMETER
   }) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -53,7 +54,11 @@ class CreateTaskUIComponents {
               const SizedBox(height: 16),
               _buildDescriptionField(descriptionController),
               const SizedBox(height: 16),
-              _buildDeadlineField(deadline: deadline, onChanged: onDeadlineChanged),
+              _buildDeadlineField(
+                deadline: deadline, 
+                onChanged: onDeadlineChanged,
+                context: context, // ✅ TRUYỀN CONTEXT
+              ),
               const SizedBox(height: 16),
               _buildPriorityField(priority: priority, onChanged: onPriorityChanged),
               const SizedBox(height: 16),
@@ -110,10 +115,11 @@ class CreateTaskUIComponents {
     );
   }
 
-  // Deadline field
+  // Deadline field - ĐÃ SỬA: THÊM CONTEXT PARAMETER
   static Widget _buildDeadlineField({
     required DateTime? deadline,
     required Function(DateTime?) onChanged,
+    required BuildContext context, // ✅ THÊM CONTEXT
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -139,7 +145,7 @@ class CreateTaskUIComponents {
             icon: const Icon(Icons.calendar_month),
             onPressed: () async {
               final picked = await showDatePicker(
-                context: _getCurrentContext(),
+                context: context, // ✅ SỬ DỤNG CONTEXT TRỰC TIẾP
                 initialDate: DateTime.now(),
                 firstDate: DateTime.now(),
                 lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
@@ -212,11 +218,11 @@ class CreateTaskUIComponents {
 
   // Assignee field
   static Widget _buildAssigneeField({
-    required List<UserModel> members,
-    required UserModel? selectedAssignee,
-    required Function(UserModel?) onChanged,
+    required List<User> members,
+    required User? selectedAssignee,
+    required Function(User?) onChanged,
   }) {
-    return DropdownButtonFormField<UserModel?>(
+    return DropdownButtonFormField<User?>(
       value: selectedAssignee,
       decoration: const InputDecoration(
         labelText: 'Assignee',
@@ -224,11 +230,11 @@ class CreateTaskUIComponents {
         prefixIcon: Icon(Icons.person),
       ),
       items: [
-        const DropdownMenuItem<UserModel?>(
+        const DropdownMenuItem<User?>(
           value: null,
           child: Text('Unassigned'),
         ),
-        ...members.map((user) => DropdownMenuItem<UserModel?>(
+        ...members.map((user) => DropdownMenuItem<User?>(
           value: user,
           child: Text(user.displayName),
         )).toList(),
@@ -311,12 +317,4 @@ class CreateTaskUIComponents {
             ),
     );
   }
-
-  // Helper để lấy context (cần cho showDatePicker)
-  static BuildContext _getCurrentContext() {
-    return navigatorKey.currentContext!;
-  }
 }
-
-// Global key cho navigation
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();

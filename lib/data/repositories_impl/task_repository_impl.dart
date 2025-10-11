@@ -36,7 +36,7 @@ class TaskRepositoryImpl implements TaskRepository {
   Future<Task?> getTaskById(String projectId, String taskId) async {
     try {
       final model = await _taskService.getTaskById(projectId, taskId);
-      return model;
+      return model; // ✅ Vì TaskModel extends Task, nên có thể return trực tiếp
     } catch (e) {
       throw Exception('Failed to get task: $e');
     }
@@ -46,7 +46,7 @@ class TaskRepositoryImpl implements TaskRepository {
   Future<List<Task>> getTasksByProject(String projectId) async {
     try {
       final models = await _taskService.getTasksByProject(projectId);
-      return models.map((m) => m as Task).toList();
+      return models; // ✅ Vì List<TaskModel> là List<Task> (do inheritance)
     } catch (e) {
       throw Exception('Failed to get tasks: $e');
     }
@@ -61,8 +61,22 @@ class TaskRepositoryImpl implements TaskRepository {
     try {
       final model = await _taskService.getTaskById(projectId, taskId);
       if (model == null) throw Exception('Task not found');
-      final updatedTask = model.copyWith(assignee: assignee);
-      final updatedModel = TaskModel.fromTask(updatedTask);
+      
+      // ✅ Tạo TaskModel mới với assignee updated
+      final updatedModel = TaskModel(
+        id: model.id,
+        projectId: model.projectId,
+        title: model.title,
+        description: model.description,
+        deadline: model.deadline,
+        tags: model.tags,
+        priority: model.priority,
+        assignee: assignee, // ✅ Cập nhật assignee
+        createdAt: model.createdAt,
+        creator: model.creator,
+        isCompleted: model.isCompleted,
+      );
+      
       await _taskService.updateTask(updatedModel);
       return updatedModel;
     } catch (e) {
@@ -79,8 +93,22 @@ class TaskRepositoryImpl implements TaskRepository {
     try {
       final model = await _taskService.getTaskById(projectId, taskId);
       if (model == null) throw Exception('Task not found');
-      final updatedTask = model.copyWith(isCompleted: isCompleted);
-      final updatedModel = TaskModel.fromTask(updatedTask);
+      
+      // ✅ Tạo TaskModel mới với isCompleted updated
+      final updatedModel = TaskModel(
+        id: model.id,
+        projectId: model.projectId,
+        title: model.title,
+        description: model.description,
+        deadline: model.deadline,
+        tags: model.tags,
+        priority: model.priority,
+        assignee: model.assignee,
+        createdAt: model.createdAt,
+        creator: model.creator,
+        isCompleted: isCompleted, // ✅ Cập nhật isCompleted
+      );
+      
       await _taskService.updateTask(updatedModel);
       return updatedModel;
     } catch (e) {

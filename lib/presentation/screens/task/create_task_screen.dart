@@ -32,8 +32,8 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
   DateTime? _deadline;
   TaskPriority _priority = TaskPriority.medium;
   final List<String> _tags = [];
-  List<UserModel> _members = [];
-  UserModel? _selectedAssignee;
+  List<User> _members = []; // ✅ ĐỔI THÀNH List<User>
+  User? _selectedAssignee; // ✅ ĐỔI THÀNH User
 
   @override
   void initState() {
@@ -49,13 +49,21 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
     super.dispose();
   }
 
-  // Tải danh sách thành viên trong project
+  // Tải danh sách thành viên trong project và convert sang User entity
   Future<void> _loadMembers() async {
     try {
       final projectService = sl<ProjectService>();
       final users = await projectService.getMembers(widget.projectId);
       setState(() {
-        _members = users.map((u) => UserModel.fromJson(u)).toList();
+        // ✅ CONVERT UserModel sang User
+        _members = users.map((u) {
+          final userModel = UserModel.fromJson(u);
+          return User(
+            id: userModel.id,
+            displayName: userModel.displayName,
+            email: userModel.email,
+          );
+        }).toList();
       });
     } catch (error) {
       print('Error loading members: $error');
@@ -90,8 +98,8 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
           descriptionController: _descriptionController,
           deadline: _deadline,
           priority: _priority,
-          members: _members,
-          selectedAssignee: _selectedAssignee,
+          members: _members, // ✅ TRUYỀN List<User>
+          selectedAssignee: _selectedAssignee, // ✅ TRUYỀN User
           tags: _tags,
           tagsController: _tagsController,
           onDeadlineChanged: _handleDeadlineChanged,
@@ -101,6 +109,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
           onTagRemoved: _handleTagRemoved,
           onCreateTask: () => _handleCreateTask(context),
           isLoading: isLoading,
+          context: context,
         );
       },
     );
@@ -121,7 +130,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
   }
 
   // Xử lý thay đổi assignee
-  void _handleAssigneeChanged(UserModel? assignee) {
+  void _handleAssigneeChanged(User? assignee) {
     setState(() {
       _selectedAssignee = assignee;
     });
@@ -161,13 +170,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
       deadline: _deadline,
       tags: List.from(_tags),
       priority: _priority,
-      assignee: _selectedAssignee != null 
-          ? User(
-              id: _selectedAssignee!.id,
-              displayName: _selectedAssignee!.displayName,
-              email: _selectedAssignee!.email,
-            )
-          : null,
+      assignee: _selectedAssignee, // ✅ SỬ DỤNG TRỰC TIẾP User
       createdAt: DateTime.now(),
       creator: const User(
         id: 'current_user', // Sẽ được thay thế bằng user thực tế

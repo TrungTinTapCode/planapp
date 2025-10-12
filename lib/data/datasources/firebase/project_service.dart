@@ -72,7 +72,12 @@ class ProjectService {
 
   /// Tìm user id theo email trong collection 'users'. Trả về null nếu không tìm thấy.
   Future<String?> getUserIdByEmail(String email) async {
-    final query = await _firestore.collection('users').where('email', isEqualTo: email).limit(1).get();
+    final query =
+        await _firestore
+            .collection('users')
+            .where('email', isEqualTo: email)
+            .limit(1)
+            .get();
     if (query.docs.isEmpty) return null;
     return query.docs.first.id;
   }

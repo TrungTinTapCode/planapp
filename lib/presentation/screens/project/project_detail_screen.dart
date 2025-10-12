@@ -183,27 +183,33 @@ class _ProjectDetailScreenContentState
   // Thêm thành viên bằng email
   void _addMemberByEmail(BuildContext context, String email) {
     // Thực hiện tìm user theo email trong collection 'users'
-  final projectService = sl<ProjectService>();
-  projectService.getUserIdByEmail(email).then((userId) {
-      if (userId == null) {
-        Navigator.pop(context);
-        _showErrorSnackbar(context, 'Không tìm thấy người dùng với email đó');
-        return;
-      }
+    final projectService = sl<ProjectService>();
+    projectService
+        .getUserIdByEmail(email)
+        .then((userId) {
+          if (userId == null) {
+            Navigator.pop(context);
+            _showErrorSnackbar(
+              context,
+              'Không tìm thấy người dùng với email đó',
+            );
+            return;
+          }
 
-      context.read<ProjectBloc>().add(
-        ProjectAddMemberRequested(
-          projectId: widget.project.id,
-          memberId: userId,
-        ),
-      );
+          context.read<ProjectBloc>().add(
+            ProjectAddMemberRequested(
+              projectId: widget.project.id,
+              memberId: userId,
+            ),
+          );
 
-      Navigator.pop(context);
-      _showSuccessSnackbar(context, 'Đã thêm thành viên vào dự án');
-    }).catchError((e) {
-      Navigator.pop(context);
-      _showErrorSnackbar(context, 'Lỗi khi tìm người dùng: $e');
-    });
+          Navigator.pop(context);
+          _showSuccessSnackbar(context, 'Đã thêm thành viên vào dự án');
+        })
+        .catchError((e) {
+          Navigator.pop(context);
+          _showErrorSnackbar(context, 'Lỗi khi tìm người dùng: $e');
+        });
   }
 
   // Xử lý xóa thành viên

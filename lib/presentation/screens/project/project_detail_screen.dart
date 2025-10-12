@@ -11,6 +11,8 @@ import '../../blocs/auth/auth_state.dart';
 import 'project_detail_ui.dart';
 import '../../blocs/task/task_bloc.dart';
 import '../../blocs/task/task_event.dart';
+import '../../../data/datasources/firebase/project_service.dart';
+import '../../../core/di/injection.dart';
 import '../task/create_task_screen.dart';
 import '../task/task_list_screen.dart';
 
@@ -180,19 +182,28 @@ class _ProjectDetailScreenContentState
 
   // Thêm thành viên bằng email
   void _addMemberByEmail(BuildContext context, String email) {
-    // TODO: Implement logic tìm user bằng email và thêm vào project
-    // Tạm thời mock với memberId
-    final memberId = 'mock_member_${DateTime.now().millisecondsSinceEpoch}';
+    // Thực hiện tìm user theo email trong collection 'users'
+  final projectService = sl<ProjectService>();
+  projectService.getUserIdByEmail(email).then((userId) {
+      if (userId == null) {
+        Navigator.pop(context);
+        _showErrorSnackbar(context, 'Không tìm thấy người dùng với email đó');
+        return;
+      }
 
-    context.read<ProjectBloc>().add(
-      ProjectAddMemberRequested(
-        projectId: widget.project.id,
-        memberId: memberId,
-      ),
-    );
+      context.read<ProjectBloc>().add(
+        ProjectAddMemberRequested(
+          projectId: widget.project.id,
+          memberId: userId,
+        ),
+      );
 
-    Navigator.pop(context);
-    _showSuccessSnackbar(context, 'Đã gửi lời mời tham gia dự án');
+      Navigator.pop(context);
+      _showSuccessSnackbar(context, 'Đã thêm thành viên vào dự án');
+    }).catchError((e) {
+      Navigator.pop(context);
+      _showErrorSnackbar(context, 'Lỗi khi tìm người dùng: $e');
+    });
   }
 
   // Xử lý xóa thành viên

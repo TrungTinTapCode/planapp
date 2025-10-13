@@ -47,6 +47,7 @@ class _ProjectDetailScreenContentState
     extends State<_ProjectDetailScreenContent>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  List<Map<String, dynamic>> _memberProfiles = [];
 
   @override
   void initState() {
@@ -61,7 +62,21 @@ class _ProjectDetailScreenContentState
       } catch (_) {
         // If TaskBloc is not provided above in the tree, ignore silently.
       }
+      // Also load member profiles
+      _loadMemberProfiles();
     });
+  }
+
+  Future<void> _loadMemberProfiles() async {
+    try {
+      final projectService = sl<ProjectService>();
+      final users = await projectService.getMembers(widget.project.id);
+      setState(() {
+        _memberProfiles = users;
+      });
+    } catch (_) {
+      // ignore
+    }
   }
 
   @override
@@ -140,13 +155,22 @@ class _ProjectDetailScreenContentState
           ),
           const SizedBox(height: 16),
           Expanded(
-            child: ProjectDetailUI.membersList(
-              members: widget.project.memberIds,
-              currentUserId: _getCurrentUserId(),
-              isOwner: _isCurrentUserOwner(),
-              onRemoveMember:
-                  (memberId) => _handleRemoveMember(context, memberId),
-            ),
+            child:
+                _memberProfiles.isNotEmpty
+                    ? ProjectDetailUI.membersListFromProfiles(
+                      profiles: _memberProfiles,
+                      currentUserId: _getCurrentUserId(),
+                      isOwner: _isCurrentUserOwner(),
+                      onRemoveMember:
+                          (memberId) => _handleRemoveMember(context, memberId),
+                    )
+                    : ProjectDetailUI.membersList(
+                      members: widget.project.memberIds,
+                      currentUserId: _getCurrentUserId(),
+                      isOwner: _isCurrentUserOwner(),
+                      onRemoveMember:
+                          (memberId) => _handleRemoveMember(context, memberId),
+                    ),
           ),
         ],
       ),

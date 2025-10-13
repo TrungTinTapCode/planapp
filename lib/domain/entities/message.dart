@@ -8,6 +8,7 @@ class MessageEntity {
   final String senderName;
   final String content;
   final DateTime timestamp;
+  final List<String> seenBy; // list of userIds who have seen the message
   final MessageType type; // text, image, file
 
   MessageEntity({
@@ -17,6 +18,7 @@ class MessageEntity {
     required this.senderName,
     required this.content,
     required this.timestamp,
+    this.seenBy = const [],
     this.type = MessageType.text,
   });
 }

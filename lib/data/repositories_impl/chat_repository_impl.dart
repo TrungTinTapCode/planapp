@@ -22,4 +22,13 @@ class ChatRepositoryImpl implements ChatRepository {
     final model = MessageModel.fromEntity(message);
     await _chatService.sendMessage(model);
   }
+
+  @override
+  Future<void> markMessageSeen(
+    String projectId,
+    String messageId,
+    String userId,
+  ) async {
+    await _chatService.markMessageSeen(projectId, messageId, userId);
+  }
 }

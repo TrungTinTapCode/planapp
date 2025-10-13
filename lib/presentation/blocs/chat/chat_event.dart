@@ -17,6 +17,17 @@ class ChatSendRequested extends ChatEvent {
   ChatSendRequested(this.message);
 }
 
+class ChatMarkSeenRequested extends ChatEvent {
+  final String projectId;
+  final String messageId;
+  final String userId;
+  ChatMarkSeenRequested({
+    required this.projectId,
+    required this.messageId,
+    required this.userId,
+  });
+}
+
 /// Mục đích: Định nghĩa các ChatEvent.
 /// Vị trí: lib/presentation/blocs/chat/chat_event.dart
 

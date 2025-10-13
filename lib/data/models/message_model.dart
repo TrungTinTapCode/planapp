@@ -10,6 +10,7 @@ class MessageModel extends MessageEntity {
     required super.content,
     required super.timestamp,
     super.type = MessageType.text,
+    super.seenBy = const [],
   });
 
   factory MessageModel.fromJson(Map<String, dynamic> json, String id) {
@@ -24,6 +25,11 @@ class MessageModel extends MessageEntity {
         (e) => e.name == (json['type'] as String? ?? 'text'),
         orElse: () => MessageType.text,
       ),
+      seenBy:
+          (json['seenBy'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
     );
   }
 
@@ -34,6 +40,7 @@ class MessageModel extends MessageEntity {
       'senderName': senderName,
       'content': content,
       'timestamp': Timestamp.fromDate(timestamp),
+      'seenBy': seenBy,
       'type': type.name,
     };
   }
@@ -47,6 +54,7 @@ class MessageModel extends MessageEntity {
       content: e.content,
       timestamp: e.timestamp,
       type: e.type,
+      seenBy: e.seenBy,
     );
   }
 

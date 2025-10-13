@@ -32,4 +32,20 @@ class ChatService {
     final docRef = col.doc(message.id);
     await docRef.set(message.toJson());
   }
+
+  /// Mark a message as seen by adding userId into seenBy array
+  Future<void> markMessageSeen(
+    String projectId,
+    String messageId,
+    String userId,
+  ) async {
+    final docRef = _firestore
+        .collection('projects')
+        .doc(projectId)
+        .collection('messages')
+        .doc(messageId);
+    await docRef.update({
+      'seenBy': FieldValue.arrayUnion([userId]),
+    });
+  }
 }

@@ -245,6 +245,57 @@ class ProjectDetailUI {
     );
   }
 
+  /// Hiển thị danh sách thành viên từ profile maps trả về từ ProjectService.getMembers
+  /// mỗi profile là Map chứa 'id','displayName','photoUrl',...
+  static Widget membersListFromProfiles({
+    required List<Map<String, dynamic>> profiles,
+    required String currentUserId,
+    required bool isOwner,
+    required Function(String) onRemoveMember,
+  }) {
+    return ListView.builder(
+      itemCount: profiles.length,
+      itemBuilder: (context, index) {
+        final p = profiles[index];
+        final memberId = p['id'] as String? ?? '';
+        final displayName =
+            p['displayName'] as String? ?? p['name'] as String? ?? 'User';
+        final photoUrl = p['photoUrl'] as String?;
+        final isCurrentUser = memberId == currentUserId;
+
+        return ListTile(
+          leading:
+              photoUrl != null
+                  ? CircleAvatar(backgroundImage: NetworkImage(photoUrl))
+                  : CircleAvatar(
+                    backgroundColor: _getMemberColor(memberId),
+                    child: Text(
+                      _getMemberInitial(memberId),
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ),
+          title: Text(
+            displayName,
+            style: TextStyle(
+              fontWeight: isCurrentUser ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+          subtitle: isCurrentUser ? const Text('Bạn') : null,
+          trailing:
+              isOwner && !isCurrentUser
+                  ? IconButton(
+                    icon: const Icon(
+                      Icons.remove_circle_outline,
+                      color: Colors.red,
+                    ),
+                    onPressed: () => onRemoveMember(memberId),
+                  )
+                  : null,
+        );
+      },
+    );
+  }
+
   // Dialog thêm thành viên
   static Widget addMemberDialog({
     required Function(String) onAddMember,

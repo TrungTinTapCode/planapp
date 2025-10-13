@@ -15,6 +15,22 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<ChatLoadRequested>(_onLoadRequested);
     on<ChatMessagesUpdated>(_onMessagesUpdated);
     on<ChatSendRequested>(_onSendRequested);
+    on<ChatMarkSeenRequested>(_onMarkSeenRequested);
+  }
+
+  Future<void> _onMarkSeenRequested(
+    ChatMarkSeenRequested event,
+    Emitter<ChatState> emit,
+  ) async {
+    try {
+      await _chatRepository.markMessageSeen(
+        event.projectId,
+        event.messageId,
+        event.userId,
+      );
+    } catch (e) {
+      // ignore errors for seen marking
+    }
   }
 
   Future<void> _onLoadRequested(

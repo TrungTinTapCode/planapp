@@ -35,6 +35,10 @@ import '../../domain/usecases/task/get_task_by_id.dart';
 import '../../presentation/blocs/auth/auth_bloc.dart';
 import '../../presentation/blocs/project/project_bloc.dart';
 import '../../presentation/blocs/task/task_bloc.dart';
+import '../../data/datasources/firebase/chat_service.dart';
+import '../../data/repositories_impl/chat_repository_impl.dart';
+import '../../domain/repositories/chat_repository.dart';
+import '../../presentation/blocs/chat/chat_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -47,11 +51,16 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => AuthService(sl(), sl()));
   sl.registerLazySingleton(() => ProjectService(sl()));
   sl.registerLazySingleton(() => TaskService(sl()));
+  sl.registerLazySingleton(() => ChatService(sl()));
 
   // ✅ Repositories
   sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(sl()));
-  sl.registerLazySingleton<ProjectRepository>(() => ProjectRepositoryImpl(sl()),);
-  sl.registerLazySingleton<TaskRepository>(() => TaskRepositoryImpl(sl()));;
+  sl.registerLazySingleton<ProjectRepository>(
+    () => ProjectRepositoryImpl(sl()),
+  );
+  sl.registerLazySingleton<TaskRepository>(() => TaskRepositoryImpl(sl()));
+  ;
+  sl.registerLazySingleton<ChatRepository>(() => ChatRepositoryImpl(sl()));
 
   // ✅ Auth UseCases
   sl.registerLazySingleton(() => LoginUser(sl()));
@@ -106,4 +115,6 @@ Future<void> initDependencies() async {
       getTaskById: sl(),
     ),
   );
+
+  sl.registerFactory(() => ChatBloc(chatRepository: sl()));
 }

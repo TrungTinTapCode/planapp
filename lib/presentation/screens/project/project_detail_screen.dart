@@ -15,6 +15,9 @@ import '../../../data/datasources/firebase/project_service.dart';
 import '../../../core/di/injection.dart';
 import '../task/create_task_screen.dart';
 import '../task/task_list_screen.dart';
+import '../../blocs/chat/chat_bloc.dart';
+import '../../blocs/chat/chat_event.dart';
+import '../chat/chat_ui.dart';
 
 class ProjectDetailScreen extends StatelessWidget {
   final ProjectEntity project;
@@ -48,7 +51,7 @@ class _ProjectDetailScreenContentState
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     // Load tasks for this project when the screen opens
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Use the TaskBloc to load tasks scoped to this project
@@ -89,7 +92,12 @@ class _ProjectDetailScreenContentState
         Expanded(
           child: TabBarView(
             controller: _tabController,
-            children: [_buildTasksTab(), _buildMembersTab(), _buildFilesTab()],
+            children: [
+              _buildTasksTab(),
+              _buildMembersTab(),
+              _buildFilesTab(),
+              _buildChatTab(),
+            ],
           ),
         ),
       ],
@@ -164,6 +172,20 @@ class _ProjectDetailScreenContentState
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // Tab chat/messages
+  Widget _buildChatTab() {
+    return BlocProvider<ChatBloc>(
+      create:
+          (context) =>
+              sl<ChatBloc>()
+                ..add(ChatLoadRequested(projectId: widget.project.id)),
+      child: ChatScreenUI(
+        projectId: widget.project.id,
+        projectName: widget.project.name,
       ),
     );
   }

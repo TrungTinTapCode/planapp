@@ -17,17 +17,11 @@ class ProjectDetailUI {
         children: [
           Text(
             project.name,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
           ),
           Text(
             '${project.memberIds.length} thành viên',
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.normal,
-            ),
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
           ),
         ],
       ),
@@ -75,10 +69,7 @@ class ProjectDetailUI {
           if (project.description.isNotEmpty) ...[
             Text(
               project.description,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.black87,
-              ),
+              style: const TextStyle(fontSize: 14, color: Colors.black87),
             ),
             const SizedBox(height: 8),
           ],
@@ -114,18 +105,10 @@ class ProjectDetailUI {
         unselectedLabelColor: Colors.grey,
         indicatorColor: Colors.blue,
         tabs: const [
-          Tab(
-            icon: Icon(Icons.task),
-            text: 'Công việc',
-          ),
-          Tab(
-            icon: Icon(Icons.people),
-            text: 'Thành viên',
-          ),
-          Tab(
-            icon: Icon(Icons.folder),
-            text: 'Tệp tin',
-          ),
+          Tab(icon: Icon(Icons.task), text: 'Công việc'),
+          Tab(icon: Icon(Icons.people), text: 'Thành viên'),
+          Tab(icon: Icon(Icons.folder), text: 'Tệp tin'),
+          Tab(icon: Icon(Icons.chat_bubble), text: 'Tin nhắn'),
         ],
       ),
     );
@@ -142,10 +125,7 @@ class ProjectDetailUI {
       children: [
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         ElevatedButton.icon(
           onPressed: onPressed,
@@ -236,7 +216,10 @@ class ProjectDetailUI {
             backgroundColor: _getMemberColor(memberId),
             child: Text(
               _getMemberInitial(memberId),
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           title: Text(
@@ -246,13 +229,17 @@ class ProjectDetailUI {
             ),
           ),
           subtitle: isOwnerMember ? const Text('Chủ sở hữu') : null,
-          trailing: isOwner && !isCurrentUser
-              ? IconButton(
-                  icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
-                  onPressed: () => onRemoveMember(memberId),
-                  tooltip: 'Xóa thành viên',
-                )
-              : null,
+          trailing:
+              isOwner && !isCurrentUser
+                  ? IconButton(
+                    icon: const Icon(
+                      Icons.remove_circle_outline,
+                      color: Colors.red,
+                    ),
+                    onPressed: () => onRemoveMember(memberId),
+                    tooltip: 'Xóa thành viên',
+                  )
+                  : null,
         );
       },
     );

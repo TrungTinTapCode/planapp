@@ -61,7 +61,7 @@ class TaskRepositoryImpl implements TaskRepository {
     try {
       final model = await _taskService.getTaskById(projectId, taskId);
       if (model == null) throw Exception('Task not found');
-      
+
       // ✅ Tạo TaskModel mới với assignee updated
       final updatedModel = TaskModel(
         id: model.id,
@@ -76,7 +76,7 @@ class TaskRepositoryImpl implements TaskRepository {
         creator: model.creator,
         isCompleted: model.isCompleted,
       );
-      
+
       await _taskService.updateTask(updatedModel);
       return updatedModel;
     } catch (e) {
@@ -93,7 +93,7 @@ class TaskRepositoryImpl implements TaskRepository {
     try {
       final model = await _taskService.getTaskById(projectId, taskId);
       if (model == null) throw Exception('Task not found');
-      
+
       // ✅ Tạo TaskModel mới với isCompleted updated
       final updatedModel = TaskModel(
         id: model.id,
@@ -108,7 +108,7 @@ class TaskRepositoryImpl implements TaskRepository {
         creator: model.creator,
         isCompleted: isCompleted, // ✅ Cập nhật isCompleted
       );
-      
+
       await _taskService.updateTask(updatedModel);
       return updatedModel;
     } catch (e) {
@@ -125,5 +125,12 @@ class TaskRepositoryImpl implements TaskRepository {
     } catch (e) {
       throw Exception('Failed to update task: $e');
     }
+  }
+
+  @override
+  Stream<List<Task>> getTaskStreamByProject(String projectId) {
+    return _taskService.getTaskStream(projectId).map((snapshot) {
+      return snapshot.docs.map((doc) => TaskModel.fromFirestore(doc)).toList();
+    });
   }
 }

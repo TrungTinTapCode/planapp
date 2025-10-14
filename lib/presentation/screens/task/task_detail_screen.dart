@@ -23,7 +23,8 @@ class TaskDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => sl<TaskBloc>()..add(GetTaskByIdRequested(projectId, taskId)),
+      create:
+          (_) => sl<TaskBloc>()..add(GetTaskByIdRequested(projectId, taskId)),
       child: Scaffold(
         appBar: TaskDetailUIComponents.taskDetailAppBar(title: 'Task Detail'),
         body: const _TaskDetailBody(),
@@ -51,6 +52,7 @@ class _TaskDetailBody extends StatelessWidget {
           return TaskDetailUIComponents.taskDetailContent(
             task: task,
             onToggleCompletion: () => _handleToggleCompletion(context, task),
+            onDeleteTask: () => _handleDeleteTask(context, task),
           );
         }
 
@@ -68,23 +70,53 @@ class _TaskDetailBody extends StatelessWidget {
   // Xử lý toggle completion status
   void _handleToggleCompletion(BuildContext context, Task task) {
     context.read<TaskBloc>().add(
-      SetTaskCompletedRequested(
-        task.projectId,
-        task.id,
-        !task.isCompleted,
-      ),
+      SetTaskCompletedRequested(task.projectId, task.id, !task.isCompleted),
     );
-    
+
     // Hiển thị snackbar thông báo
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          task.isCompleted 
-              ? 'Task marked as incomplete' 
+          task.isCompleted
+              ? 'Task marked as incomplete'
               : 'Task marked as completed',
         ),
         duration: const Duration(seconds: 2),
       ),
+    );
+  }
+
+  // Xử lý xóa task
+  void _handleDeleteTask(BuildContext context, Task task) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Xác nhận xóa'),
+            content: const Text('Bạn có chắc chắn muốn xóa task này?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Hủy'),
+              ),
+              TextButton(
+                onPressed: () {
+                  context.read<TaskBloc>().add(
+                    DeleteTaskRequested(task.projectId, task.id),
+                  );
+                  Navigator.pop(context);
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Task đã được xóa thành công'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+                child: const Text('Xóa'),
+              ),
+            ],
+          ),
     );
   }
 }

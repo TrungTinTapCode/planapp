@@ -106,9 +106,9 @@ class ProjectDetailUI {
         indicatorColor: Colors.blue,
         tabs: const [
           Tab(icon: Icon(Icons.task), text: 'Công việc'),
+          Tab(icon: Icon(Icons.chat_bubble), text: 'Tin nhắn'),
           Tab(icon: Icon(Icons.people), text: 'Thành viên'),
           Tab(icon: Icon(Icons.folder), text: 'Tệp tin'),
-          Tab(icon: Icon(Icons.chat_bubble), text: 'Tin nhắn'),
         ],
       ),
     );

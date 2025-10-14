@@ -1,3 +1,5 @@
+/// Mục đích: Interface TaskRepository (abstract) cho domain.
+/// Vị trí: lib/domain/repositories/task_repository.dart
 import 'package:planapp/domain/entities/task.dart';
 import 'package:planapp/domain/entities/user.dart';
 
@@ -27,9 +29,7 @@ abstract class TaskRepository {
 
   /// Tìm task theo id
   Future<Task?> getTaskById(String projectId, String taskId);
+
+  /// Lắng nghe thay đổi danh sách task theo projectId
+  Stream<List<Task>> getTaskStreamByProject(String projectId);
 }
-
-/// Mục đích: Interface TaskRepository (abstract) cho domain.
-/// Vị trí: lib/domain/repositories/task_repository.dart
-
-// TODO: Định nghĩa abstract class TaskRepository

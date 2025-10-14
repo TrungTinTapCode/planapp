@@ -17,9 +17,7 @@ class TaskDetailUIComponents {
 
   // Loading indicator
   static Widget loadingIndicator() {
-    return const Center(
-      child: CircularProgressIndicator(),
-    );
+    return const Center(child: CircularProgressIndicator());
   }
 
   // Error state
@@ -52,6 +50,7 @@ class TaskDetailUIComponents {
   static Widget taskDetailContent({
     required Task task,
     required VoidCallback onToggleCompletion,
+    required VoidCallback onDeleteTask,
   }) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -65,6 +64,12 @@ class TaskDetailUIComponents {
           _buildDetailsSection(task),
           const SizedBox(height: 24),
           _buildCompletionButton(task: task, onPressed: onToggleCompletion),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: onDeleteTask,
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Xóa Task'),
+          ),
         ],
       ),
     );
@@ -80,10 +85,7 @@ class TaskDetailUIComponents {
         Expanded(
           child: Text(
             task.title,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
         ),
       ],
@@ -131,10 +133,12 @@ class TaskDetailUIComponents {
         _buildDetailItem(
           icon: Icons.calendar_today,
           label: 'Deadline',
-          value: task.deadline != null 
-              ? '${task.deadline!.day}/${task.deadline!.month}/${task.deadline!.year}'
-              : 'No deadline',
-          isImportant: task.deadline != null && task.deadline!.isBefore(DateTime.now()),
+          value:
+              task.deadline != null
+                  ? '${task.deadline!.day}/${task.deadline!.month}/${task.deadline!.year}'
+                  : 'No deadline',
+          isImportant:
+              task.deadline != null && task.deadline!.isBefore(DateTime.now()),
         ),
         const SizedBox(height: 12),
         _buildDetailItem(
@@ -181,7 +185,7 @@ class TaskDetailUIComponents {
   static Widget _buildPriorityBadge(TaskPriority priority) {
     Color color;
     String label;
-    
+
     switch (priority) {
       case TaskPriority.urgent:
         color = Colors.purple;
@@ -200,7 +204,7 @@ class TaskDetailUIComponents {
         label = 'Low';
         break;
     }
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
@@ -234,10 +238,7 @@ class TaskDetailUIComponents {
           children: [
             Text(
               label,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              ),
+              style: const TextStyle(fontSize: 14, color: Colors.grey),
             ),
             const SizedBox(height: 4),
             Text(
@@ -263,7 +264,7 @@ class TaskDetailUIComponents {
         value: 'No tags',
       );
     }
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -271,23 +272,22 @@ class TaskDetailUIComponents {
           children: [
             Icon(Icons.local_offer, size: 20, color: Colors.grey),
             SizedBox(width: 12),
-            Text(
-              'Tags',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              ),
-            ),
+            Text('Tags', style: TextStyle(fontSize: 14, color: Colors.grey)),
           ],
         ),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: tags.map((tag) => Chip(
-            label: Text(tag),
-            backgroundColor: Colors.blue[50],
-          )).toList(),
+          children:
+              tags
+                  .map(
+                    (tag) => Chip(
+                      label: Text(tag),
+                      backgroundColor: Colors.blue[50],
+                    ),
+                  )
+                  .toList(),
         ),
       ],
     );

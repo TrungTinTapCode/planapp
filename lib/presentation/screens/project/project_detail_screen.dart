@@ -18,6 +18,7 @@ import '../task/task_list_screen.dart';
 import '../../blocs/chat/chat_bloc.dart';
 import '../../blocs/chat/chat_event.dart';
 import '../chat/chat_ui.dart';
+import '../../../domain/repositories/project_repository.dart';
 
 class ProjectDetailScreen extends StatelessWidget {
   final ProjectEntity project;
@@ -63,20 +64,17 @@ class _ProjectDetailScreenContentState
         // If TaskBloc is not provided above in the tree, ignore silently.
       }
       // Also load member profiles
-      _loadMemberProfiles();
+      _listenToMemberProfiles();
     });
   }
 
-  Future<void> _loadMemberProfiles() async {
-    try {
-      final projectService = sl<ProjectService>();
-      final users = await projectService.getMembers(widget.project.id);
+  void _listenToMemberProfiles() {
+    final projectService = sl<ProjectService>();
+    projectService.getMemberStream(widget.project.id).listen((users) {
       setState(() {
         _memberProfiles = users;
       });
-    } catch (_) {
-      // ignore
-    }
+    });
   }
 
   @override
@@ -109,9 +107,9 @@ class _ProjectDetailScreenContentState
             controller: _tabController,
             children: [
               _buildTasksTab(),
+              _buildChatTab(),
               _buildMembersTab(),
               _buildFilesTab(),
-              _buildChatTab(),
             ],
           ),
         ),
@@ -259,7 +257,9 @@ class _ProjectDetailScreenContentState
   }
 
   // Xử lý xóa thành viên
-  void _handleRemoveMember(BuildContext context, String memberId) {
+  void _handleRemoveMember(BuildContext context, String memberId) async {
+    final projectRepository = sl<ProjectRepository>();
+
     if (memberId == widget.project.ownerId) {
       _showErrorSnackbar(context, 'Không thể xóa chủ sở hữu dự án');
       return;
@@ -270,10 +270,23 @@ class _ProjectDetailScreenContentState
       builder:
           (context) => ProjectDetailUI.removeMemberDialog(
             context: context,
-            onConfirm: () {
-              // TODO: Implement remove member logic
-              Navigator.pop(context);
-              _showSuccessSnackbar(context, 'Đã xóa thành viên khỏi dự án');
+            onConfirm: () async {
+              try {
+                await projectRepository.removeMemberFromProject(
+                  widget.project.id,
+                  memberId,
+                );
+                setState(() {
+                  _memberProfiles.removeWhere(
+                    (member) => member['id'] == memberId,
+                  );
+                });
+                Navigator.pop(context);
+                _showSuccessSnackbar(context, 'Đã xóa thành viên khỏi dự án');
+              } catch (e) {
+                Navigator.pop(context);
+                _showErrorSnackbar(context, 'Lỗi khi xóa thành viên: $e');
+              }
             },
           ),
     );

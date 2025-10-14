@@ -59,7 +59,10 @@ class TaskModel extends Task {
       'deadline': deadline != null ? Timestamp.fromDate(deadline!) : null,
       'tags': tags,
       'priority': priority.name,
-      'assignee': assignee != null ? _userToJson(assignee!) : null, // ✅ SỬA: Dùng helper function
+      'assignee':
+          assignee != null
+              ? _userToJson(assignee!)
+              : null, // ✅ SỬA: Dùng helper function
       'createdAt': Timestamp.fromDate(createdAt),
       'creator': _userToJson(creator), // ✅ SỬA: Dùng helper function
       'isCompleted': isCompleted,
@@ -99,5 +102,10 @@ class TaskModel extends Task {
       displayName: userMap['displayName'] as String,
       email: userMap['email'] as String,
     );
+  }
+
+  factory TaskModel.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return TaskModel.fromJson({...data, 'id': doc.id});
   }
 }

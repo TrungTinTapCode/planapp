@@ -75,6 +75,16 @@ class GetTaskByIdRequested extends TaskEvent {
   List<Object?> get props => [projectId, taskId];
 }
 
+class TasksUpdated extends TaskEvent {
+  final String projectId;
+  final List<Task> tasks;
+
+  const TasksUpdated(this.projectId, this.tasks);
+
+  @override
+  List<Object?> get props => [projectId, tasks];
+}
+
 /// Mục đích: Định nghĩa các TaskEvent.
 /// Vị trí: lib/presentation/blocs/task/task_event.dart
 

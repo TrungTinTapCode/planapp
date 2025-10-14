@@ -67,4 +67,12 @@ class TaskService {
         )
         .toList();
   }
+
+  Stream<QuerySnapshot> getTaskStream(String projectId) {
+    return _firestore
+        .collection('projects')
+        .doc(projectId)
+        .collection('tasks')
+        .snapshots();
+  }
 }

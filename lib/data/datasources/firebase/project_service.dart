@@ -81,4 +81,26 @@ class ProjectService {
     if (query.docs.isEmpty) return null;
     return query.docs.first.id;
   }
+
+  Stream<List<Map<String, dynamic>>> getMemberStream(String projectId) {
+    return _firestore
+        .collection('projects')
+        .doc(projectId)
+        .snapshots()
+        .asyncMap((snapshot) async {
+          if (!snapshot.exists) return [];
+          final data = snapshot.data()!;
+          final List<dynamic> memberIds = data['memberIds'] ?? [];
+          final users = <Map<String, dynamic>>[];
+          for (final id in memberIds) {
+            final udoc =
+                await _firestore.collection('users').doc(id as String).get();
+            if (udoc.exists) {
+              final udata = udoc.data()!;
+              users.add({...udata, 'id': udoc.id});
+            }
+          }
+          return users;
+        });
+  }
 }

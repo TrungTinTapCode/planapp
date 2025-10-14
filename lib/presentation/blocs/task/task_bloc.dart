@@ -8,6 +8,7 @@ import '../../../domain/usecases/task/get_tasks_by_project.dart';
 import '../../../domain/usecases/task/assign_task.dart';
 import '../../../domain/usecases/task/set_task_completed.dart';
 import '../../../domain/usecases/task/get_task_by_id.dart';
+import 'dart:async';
 
 class TaskBloc extends Bloc<TaskEvent, TaskState> {
   final CreateTask _createTask;
@@ -17,6 +18,8 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
   final AssignTask _assignTask;
   final SetTaskCompleted _setTaskCompleted;
   final GetTaskById _getTaskById;
+
+  StreamSubscription? _taskStreamSubscription;
 
   TaskBloc({
     required CreateTask createTask,
@@ -41,6 +44,27 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     on<AssignTaskRequested>(_onAssignTask);
     on<SetTaskCompletedRequested>(_onSetCompleted);
     on<GetTaskByIdRequested>(_onGetById);
+    on<TasksUpdated>(_onTasksUpdated);
+  }
+
+  @override
+  Future<void> close() {
+    _taskStreamSubscription?.cancel();
+    return super.close();
+  }
+
+  void _listenToTaskChanges(String projectId, Emitter<TaskState> emit) {
+    _taskStreamSubscription?.cancel();
+    _taskStreamSubscription = _getTasksByProject
+        .stream(projectId)
+        .listen(
+          (tasks) {
+            add(TasksUpdated(projectId, tasks));
+          },
+          onError: (error) {
+            emit(TaskOperationFailure(error.toString()));
+          },
+        );
   }
 
   Future<void> _onLoadTasks(
@@ -49,8 +73,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
   ) async {
     emit(TaskLoading());
     try {
-      final tasks = await _getTasksByProject.execute(event.projectId);
-      emit(TasksLoadSuccess(tasks));
+      _listenToTaskChanges(event.projectId, emit);
     } catch (e) {
       emit(TaskOperationFailure(e.toString()));
     }
@@ -141,6 +164,19 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
       } else {
         emit(TaskLoaded(t));
       }
+    } catch (e) {
+      emit(TaskOperationFailure(e.toString()));
+    }
+  }
+
+  Future<void> _onTasksUpdated(
+    TasksUpdated event,
+    Emitter<TaskState> emit,
+  ) async {
+    emit(TaskLoading());
+    try {
+      final tasks = await _getTasksByProject.execute(event.projectId);
+      emit(TasksLoadSuccess(tasks));
     } catch (e) {
       emit(TaskOperationFailure(e.toString()));
     }

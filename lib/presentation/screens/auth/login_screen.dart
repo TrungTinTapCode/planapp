@@ -65,6 +65,8 @@ class _LoginScreenContentState extends State<_LoginScreenContent> {
             passwordController: _passwordController,
             onLogin: () => _handleLogin(context),
             isLoading: isLoading,
+            onGoogleSignIn:
+                () => context.read<AuthBloc>().add(AuthGoogleSignInRequested()),
           ),
           const SizedBox(height: 20),
           LoginUIComponents.registerLink(
@@ -91,10 +93,7 @@ class _LoginScreenContentState extends State<_LoginScreenContent> {
   // Hiển thị lỗi
   void _showErrorSnackbar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
     );
   }
 

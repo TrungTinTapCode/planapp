@@ -28,4 +28,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   // Lấy thông tin người dùng hiện tại từ AuthService
   User? getCurrentUser() => _authService.currentUser;
+
+  @override
+  Future<User> signInWithGoogle() async => _authService.signInWithGoogle();
 }

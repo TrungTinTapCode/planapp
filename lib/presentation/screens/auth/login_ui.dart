@@ -2,6 +2,7 @@
 // Vị trí: lib/presentation/widgets/login_ui_components.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../share/auth_ui_components.dart';
 
 class LoginUIComponents {
@@ -19,6 +20,7 @@ class LoginUIComponents {
     required TextEditingController passwordController,
     required VoidCallback onLogin,
     required bool isLoading,
+    VoidCallback? onGoogleSignIn,
   }) {
     return Column(
       children: [
@@ -41,17 +43,29 @@ class LoginUIComponents {
           onPressed: onLogin,
           isLoading: isLoading,
         ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: onGoogleSignIn,
+            icon: SvgPicture.asset(
+              'assets/google_logo.svg',
+              width: 20,
+              height: 20,
+            ),
+            label: const Text('Đăng nhập bằng Google'),
+          ),
+        ),
       ],
     );
   }
 
   // Link chuyển sang đăng ký
-static Widget registerLink({required VoidCallback onTap}) {
-  return AuthUIComponents.authSwitchText(
-    text: 'Chưa có tài khoản?',
-    linkText: 'Đăng ký ngay',
-    onTap: onTap,
-  );
-}
-
+  static Widget registerLink({required VoidCallback onTap}) {
+    return AuthUIComponents.authSwitchText(
+      text: 'Chưa có tài khoản?',
+      linkText: 'Đăng ký ngay',
+      onTap: onTap,
+    );
+  }
 }

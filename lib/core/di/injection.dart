@@ -17,6 +17,7 @@ import '../../domain/usecases/user/login_user.dart';
 import '../../domain/usecases/user/register_user.dart';
 import '../../domain/usecases/user/logout_user.dart';
 import '../../domain/usecases/user/get_current_user.dart';
+import '../../domain/usecases/user/sign_in_with_google.dart';
 
 import '../../domain/usecases/project/create_project.dart';
 import '../../domain/usecases/project/get_projects.dart';
@@ -67,6 +68,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => RegisterUser(sl()));
   sl.registerLazySingleton(() => LogoutUser(sl()));
   sl.registerLazySingleton(() => GetCurrentUser(sl()));
+  sl.registerLazySingleton(() => SignInWithGoogle(sl()));
 
   // ✅ Project UseCases
   sl.registerLazySingleton(() => CreateProject(sl()));
@@ -91,6 +93,7 @@ Future<void> initDependencies() async {
       registerUser: sl(),
       logoutUser: sl(),
       getCurrentUser: sl(),
+      signInWithGoogle: sl(),
     ),
   );
 

@@ -3,6 +3,7 @@
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../../models/user_model.dart';
 
 class AuthService {
@@ -115,5 +116,50 @@ class AuthService {
       email: user.email ?? '',
       photoUrl: user.photoURL,
     );
+  }
+
+  /// Đăng nhập bằng Google
+  Future<UserModel> signInWithGoogle() async {
+    try {
+      final googleSignIn = GoogleSignIn();
+      final googleUser = await googleSignIn.signIn();
+      if (googleUser == null) {
+        throw Exception('Quy trình đăng nhập Google đã bị hủy');
+      }
+
+      final googleAuth = await googleUser.authentication;
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final userCredential = await _auth.signInWithCredential(credential);
+      final user = userCredential.user!;
+
+      // Ensure Firestore user doc exists
+      final userDoc = _firestore.collection('users').doc(user.uid);
+      final snapshot = await userDoc.get();
+      if (!snapshot.exists) {
+        await userDoc.set({
+          'id': user.uid,
+          'email': user.email,
+          'displayName': user.displayName ?? '',
+          'role': 'member',
+          'photoUrl': user.photoURL,
+        });
+      }
+
+      return UserModel(
+        id: user.uid,
+        displayName: user.displayName ?? user.email ?? '',
+        email: user.email ?? '',
+        photoUrl: user.photoURL,
+      );
+    } on FirebaseAuthException catch (e) {
+      // Firebase Auth specific errors
+      throw Exception('Lỗi xác thực: ${e.message ?? e.code}');
+    } catch (e) {
+      throw Exception('Lỗi khi đăng nhập bằng Google: $e');
+    }
   }
 }

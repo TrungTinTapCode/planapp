@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "1031316928123",
+    "firebase_url": "https://planapp-a5ce5-default-rtdb.asia-southeast1.firebasedatabase.app",
     "project_id": "planapp-a5ce5",
     "storage_bucket": "planapp-a5ce5.firebasestorage.app"
   },
@@ -22,7 +23,7 @@
           }
         },
         {
-          "client_id": "1031316928123-7ilf0mjvni1e7ui1ikv6jiju7nuteub3.apps.googleusercontent.com",
+          "client_id": "1031316928123-i3ev9lkmjc89glc3t4k4308927t6n8m7.apps.googleusercontent.com",
           "client_type": 3
         }
       ],

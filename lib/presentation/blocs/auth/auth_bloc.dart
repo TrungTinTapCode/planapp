@@ -6,6 +6,7 @@ import '../../../domain/usecases/user/login_user.dart';
 import '../../../domain/usecases/user/register_user.dart';
 import '../../../domain/usecases/user/logout_user.dart';
 import '../../../domain/usecases/user/get_current_user.dart';
+import '../../../domain/usecases/user/sign_in_with_google.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
@@ -14,6 +15,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final RegisterUser _registerUser;
   final LogoutUser _logoutUser;
   final GetCurrentUser? _getCurrentUser;
+  final SignInWithGoogle? _signInWithGoogle;
 
   // Khởi tạo AuthBloc với các UseCases cần thiết
   AuthBloc({
@@ -21,10 +23,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required RegisterUser registerUser,
     required LogoutUser logoutUser,
     GetCurrentUser? getCurrentUser,
+    SignInWithGoogle? signInWithGoogle,
   }) : _loginUser = loginUser,
        _registerUser = registerUser,
        _logoutUser = logoutUser,
        _getCurrentUser = getCurrentUser,
+       _signInWithGoogle = signInWithGoogle,
        super(AuthInitial()) {
     // Đăng ký các event handlers
     on<AuthLoginRequested>(_onLoginRequested);
@@ -32,6 +36,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthLogoutRequested>(_onLogoutRequested);
     // Kiểm tra nếu đã có user đang đăng nhập từ cache/session
     on<AuthCheckRequested>(_onCheckRequested);
+    on<AuthGoogleSignInRequested>(_onGoogleSignInRequested);
     add(AuthCheckRequested());
   }
   Future<void> _onCheckRequested(
@@ -122,6 +127,21 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } catch (e, st) {
       // ignore: avoid_print
       print('AuthBloc: Logout error: $e\n$st');
+      emit(AuthError(e.toString()));
+    }
+  }
+
+  Future<void> _onGoogleSignInRequested(
+    AuthGoogleSignInRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    try {
+      final user = await _signInWithGoogle!.execute();
+      emit(AuthAuthenticated(user));
+    } catch (e, st) {
+      // ignore: avoid_print
+      print('AuthBloc: GoogleSignIn error: $e\n$st');
       emit(AuthError(e.toString()));
     }
   }

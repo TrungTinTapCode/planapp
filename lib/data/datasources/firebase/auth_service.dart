@@ -4,6 +4,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import '../../../core/constants/google_oauth.dart';
 import '../../models/user_model.dart';
 
 class AuthService {
@@ -121,7 +122,13 @@ class AuthService {
   /// Đăng nhập bằng Google
   Future<UserModel> signInWithGoogle() async {
     try {
-      final googleSignIn = GoogleSignIn();
+      final googleSignIn = GoogleSignIn(
+        // serverClientId giúp một số thiết bị tránh lỗi DEVELOPER_ERROR
+        serverClientId: googleWebClientId,
+        scopes: const ['email', 'profile'],
+      );
+      // Force sign out trước khi sign in để tránh cached account issues
+      await googleSignIn.signOut();
       final googleUser = await googleSignIn.signIn();
       if (googleUser == null) {
         throw Exception('Quy trình đăng nhập Google đã bị hủy');
@@ -157,7 +164,7 @@ class AuthService {
       );
     } on FirebaseAuthException catch (e) {
       // Firebase Auth specific errors
-      throw Exception('Lỗi xác thực: ${e.message ?? e.code}');
+      throw Exception('Lỗi xác thực Firebase: ${e.message ?? e.code}');
     } catch (e) {
       throw Exception('Lỗi khi đăng nhập bằng Google: $e');
     }

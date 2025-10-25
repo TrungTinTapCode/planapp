@@ -55,18 +55,39 @@ class ProjectService {
 
   /// Lấy danh sách user models của các member trong project
   Future<List<Map<String, dynamic>>> getMembers(String projectId) async {
+    print('🔍 ProjectService.getMembers: projectId=$projectId');
+
     final doc = await _firestore.collection('projects').doc(projectId).get();
-    if (!doc.exists) return [];
+    if (!doc.exists) {
+      print('❌ Project document does not exist');
+      return [];
+    }
+
     final data = doc.data()!;
+    print('📄 Project data: ${data.keys.toList()}');
+
     final List<dynamic> memberIds = data['memberIds'] ?? [];
+    print('👥 MemberIds in project: $memberIds (count: ${memberIds.length})');
+
+    if (memberIds.isEmpty) {
+      print('⚠️ Project has no memberIds array or it is empty');
+      return [];
+    }
+
     final users = <Map<String, dynamic>>[];
     for (final id in memberIds) {
+      print('  🔍 Fetching user: $id');
       final udoc = await _firestore.collection('users').doc(id as String).get();
       if (udoc.exists) {
         final udata = udoc.data()!;
         users.add({...udata, 'id': udoc.id});
+        print('  ✅ Found user: ${udata['displayName'] ?? udata['email']}');
+      } else {
+        print('  ❌ User document not found: $id');
       }
     }
+
+    print('✅ Total users loaded: ${users.length}');
     return users;
   }
 

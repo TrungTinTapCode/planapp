@@ -36,9 +36,26 @@ class AuthService {
     final doc = await _firestore.collection('users').doc(user.uid).get();
     if (doc.exists) {
       final data = doc.data()!;
+      String displayName =
+          data['displayName'] as String? ??
+          data['name'] as String? ??
+          user.email?.split('@')[0] ??
+          'User';
+
+      // Nếu displayName đang thiếu hoặc rỗng, cập nhật vào Firestore
+      if ((data['displayName'] == null ||
+              (data['displayName'] as String).isEmpty) &&
+          user.email != null) {
+        displayName = user.email!.split('@')[0];
+        await _firestore.collection('users').doc(user.uid).update({
+          'displayName': displayName,
+        });
+        print('Updated missing displayName for user: $displayName');
+      }
+
       return UserModel.fromJson({
         'id': user.uid,
-        'displayName': data['displayName'] ?? data['name'] ?? '',
+        'displayName': displayName,
         'email': user.email ?? data['email'] ?? '',
         'photoUrl': data['photoUrl'],
       });
@@ -46,7 +63,7 @@ class AuthService {
 
     return UserModel(
       id: user.uid,
-      displayName: user.displayName ?? user.email ?? '',
+      displayName: user.displayName ?? user.email?.split('@')[0] ?? 'User',
       email: user.email ?? '',
       photoUrl: user.photoURL,
     );
@@ -147,20 +164,45 @@ class AuthService {
       final userDoc = _firestore.collection('users').doc(user.uid);
       final snapshot = await userDoc.get();
       if (!snapshot.exists) {
+        // Tạo mới user document - ✅ DÙNG DISPLAYNAME TỪ GOOGLE
         await userDoc.set({
           'id': user.uid,
           'email': user.email,
-          'displayName': user.displayName ?? '',
+          'displayName':
+              user.displayName ?? user.email?.split('@')[0] ?? 'User',
           'role': 'member',
           'photoUrl': user.photoURL,
         });
+        print('✅ Created Google user with displayName: ${user.displayName}');
+      } else {
+        // Cập nhật displayName nếu đang thiếu hoặc khác với Google
+        final data = snapshot.data()!;
+        final existingDisplayName = data['displayName'] as String?;
+
+        // Nếu Google có displayName và khác với Firestore, cập nhật
+        if (user.displayName != null &&
+            (existingDisplayName == null ||
+                existingDisplayName.isEmpty ||
+                existingDisplayName != user.displayName)) {
+          await userDoc.update({'displayName': user.displayName});
+          print('✅ Updated displayName to Google name: ${user.displayName}');
+        } else if (existingDisplayName == null || existingDisplayName.isEmpty) {
+          // Nếu không có displayName, tạo từ email
+          final fallbackName = user.email?.split('@')[0] ?? 'User';
+          await userDoc.update({'displayName': fallbackName});
+          print('✅ Set fallback displayName: $fallbackName');
+        }
       }
+
+      // Đọc lại để đảm bảo có displayName
+      final updatedSnapshot = await userDoc.get();
+      final userData = updatedSnapshot.data()!;
 
       return UserModel(
         id: user.uid,
-        displayName: user.displayName ?? user.email ?? '',
+        displayName: userData['displayName'] as String? ?? user.email ?? 'User',
         email: user.email ?? '',
-        photoUrl: user.photoURL,
+        photoUrl: userData['photoUrl'] as String?,
       );
     } on FirebaseAuthException catch (e) {
       // Firebase Auth specific errors

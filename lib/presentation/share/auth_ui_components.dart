@@ -8,27 +8,14 @@ class AuthUIComponents {
   static Widget authHeader(String title, String subtitle) {
     return Column(
       children: [
-        const Icon(
-          Icons.task_alt,
-          size: 80,
-          color: Colors.blue,
-        ),
+        const Icon(Icons.task_alt, size: 80, color: Colors.blue),
         const SizedBox(height: 20),
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 10),
-        Text(
-          subtitle,
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.grey[600],
-          ),
-        ),
+        Text(subtitle, style: TextStyle(fontSize: 16, color: Colors.grey[600])),
         const SizedBox(height: 30),
       ],
     );
@@ -41,6 +28,7 @@ class AuthUIComponents {
     required IconData icon,
     bool obscureText = false,
     TextInputType keyboardType = TextInputType.text,
+    String? hint, // ✅ THÊM PARAMETER HINT
   }) {
     return TextField(
       controller: controller,
@@ -48,6 +36,7 @@ class AuthUIComponents {
       keyboardType: keyboardType,
       decoration: InputDecoration(
         labelText: label,
+        hintText: hint, // ✅ SỬ DỤNG HINT
         prefixIcon: Icon(icon),
         border: const OutlineInputBorder(),
       ),
@@ -65,12 +54,10 @@ class AuthUIComponents {
       height: 50,
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
-        child: isLoading
-            ? const CircularProgressIndicator(color: Colors.white)
-            : Text(
-                text,
-                style: const TextStyle(fontSize: 16),
-              ),
+        child:
+            isLoading
+                ? const CircularProgressIndicator(color: Colors.white)
+                : Text(text, style: const TextStyle(fontSize: 16)),
       ),
     );
   }
@@ -79,7 +66,7 @@ class AuthUIComponents {
   static Widget authSwitchText({
     required String text,
     required String linkText,
-    required VoidCallback onTap, 
+    required VoidCallback onTap,
   }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -87,7 +74,7 @@ class AuthUIComponents {
         Text(text),
         const SizedBox(width: 5),
         GestureDetector(
-          onTap: onTap, 
+          onTap: onTap,
           child: Text(
             linkText,
             style: const TextStyle(

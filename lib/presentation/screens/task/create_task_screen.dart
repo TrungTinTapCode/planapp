@@ -7,10 +7,11 @@ import '../../../core/di/injection.dart';
 import '../../blocs/task/task_bloc.dart';
 import '../../blocs/task/task_event.dart';
 import '../../blocs/task/task_state.dart';
+import '../../blocs/auth/auth_bloc.dart';
+import '../../blocs/auth/auth_state.dart';
 import '../../../domain/entities/task.dart';
 import '../../../domain/entities/task_priority.dart';
 import '../../../domain/entities/user.dart';
-import '../../../data/models/user_model.dart';
 import '../../../data/datasources/firebase/project_service.dart';
 import 'create_task_ui.dart';
 
@@ -28,12 +29,13 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _tagsController = TextEditingController();
-  
+
   DateTime? _deadline;
   TaskPriority _priority = TaskPriority.medium;
   final List<String> _tags = [];
   List<User> _members = []; // ✅ ĐỔI THÀNH List<User>
   User? _selectedAssignee; // ✅ ĐỔI THÀNH User
+  bool _isLoadingMembers = true; // ✅ THÊM FLAG LOADING
 
   @override
   void initState() {
@@ -52,21 +54,40 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
   // Tải danh sách thành viên trong project và convert sang User entity
   Future<void> _loadMembers() async {
     try {
+      print('🔄 Loading members for project: ${widget.projectId}');
       final projectService = sl<ProjectService>();
       final users = await projectService.getMembers(widget.projectId);
+      print('✅ Loaded ${users.length} members');
+
       setState(() {
-        // ✅ CONVERT UserModel sang User
-        _members = users.map((u) {
-          final userModel = UserModel.fromJson(u);
-          return User(
-            id: userModel.id,
-            displayName: userModel.displayName,
-            email: userModel.email,
-          );
-        }).toList();
+        // ✅ CONVERT UserModel sang User với safe null handling
+        _members =
+            users.map((u) {
+              try {
+                // Xử lý displayName có thể null
+                final displayName =
+                    u['displayName'] as String? ??
+                    u['email'] as String? ??
+                    'Unknown User';
+                final email = u['email'] as String? ?? '';
+                final id = u['id'] as String;
+
+                print('  - Member: $displayName ($id)');
+
+                return User(id: id, displayName: displayName, email: email);
+              } catch (e) {
+                print('  ⚠️ Error parsing user: $e');
+                print('  📄 User data: $u');
+                rethrow;
+              }
+            }).toList();
+        _isLoadingMembers = false;
       });
     } catch (error) {
-      print('Error loading members: $error');
+      print('❌ Error loading members: $error');
+      setState(() {
+        _isLoadingMembers = false;
+      });
     }
   }
 
@@ -109,6 +130,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
           onTagRemoved: _handleTagRemoved,
           onCreateTask: () => _handleCreateTask(context),
           isLoading: isLoading,
+          isLoadingMembers: _isLoadingMembers,
           context: context,
         );
       },
@@ -155,13 +177,20 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
   // Xử lý tạo task
   void _handleCreateTask(BuildContext context) {
     if (_formKey.currentState?.validate() ?? false) {
-      final task = _createTaskEntity();
+      // Lấy user hiện tại từ AuthBloc
+      final authState = context.read<AuthBloc>().state;
+      User? currentUser;
+      if (authState is AuthAuthenticated) {
+        currentUser = authState.user;
+      }
+
+      final task = _createTaskEntity(currentUser);
       context.read<TaskBloc>().add(CreateTaskRequested(task));
     }
   }
 
   // Tạo entity task từ form data
-  Task _createTaskEntity() {
+  Task _createTaskEntity(User? currentUser) {
     return Task(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       projectId: widget.projectId,
@@ -172,11 +201,9 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
       priority: _priority,
       assignee: _selectedAssignee, // ✅ SỬ DỤNG TRỰC TIẾP User
       createdAt: DateTime.now(),
-      creator: const User(
-        id: 'current_user', // Sẽ được thay thế bằng user thực tế
-        displayName: 'Current User',
-        email: 'current@user.com',
-      ),
+      creator:
+          currentUser ??
+          const User(id: 'unknown', displayName: 'Unknown User', email: ''),
     );
   }
 
@@ -185,7 +212,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
     if (state is TaskOperationSuccess) {
       // Trở về màn hình trước với kết quả thành công
       Navigator.of(context).pop(true);
-      
+
       // Hiển thị thông báo thành công
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

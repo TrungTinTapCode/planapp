@@ -16,6 +16,7 @@ class SignupUIComponents {
   // Form đăng ký
   static Widget signupForm({
     required TextEditingController nameController,
+    required TextEditingController usernameController, // ✅ THÊM PARAMETER
     required TextEditingController emailController,
     required TextEditingController passwordController,
     required VoidCallback onSignup,
@@ -27,6 +28,14 @@ class SignupUIComponents {
           controller: nameController,
           label: 'Họ và tên',
           icon: Icons.person,
+        ),
+        const SizedBox(height: 16),
+        // ✅ THÊM TRƯỜNG USERNAME
+        AuthUIComponents.authTextField(
+          controller: usernameController,
+          label: 'Tên tài khoản',
+          icon: Icons.account_circle,
+          hint: 'Ví dụ: trungtintapcode',
         ),
         const SizedBox(height: 16),
         AuthUIComponents.authTextField(

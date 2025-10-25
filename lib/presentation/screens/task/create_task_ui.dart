@@ -17,9 +17,7 @@ class CreateTaskUIComponents {
 
   // Loading indicator
   static Widget loadingIndicator() {
-    return const Center(
-      child: CircularProgressIndicator(),
-    );
+    return const Center(child: CircularProgressIndicator());
   }
 
   // Main form để tạo task
@@ -40,6 +38,7 @@ class CreateTaskUIComponents {
     required Function(String) onTagRemoved,
     required VoidCallback onCreateTask,
     required bool isLoading,
+    required bool isLoadingMembers, // ✅ THÊM PARAMETER
     required BuildContext context, // ✅ THÊM CONTEXT PARAMETER
   }) {
     return Padding(
@@ -55,19 +54,23 @@ class CreateTaskUIComponents {
               _buildDescriptionField(descriptionController),
               const SizedBox(height: 16),
               _buildDeadlineField(
-                deadline: deadline, 
+                deadline: deadline,
                 onChanged: onDeadlineChanged,
                 context: context, // ✅ TRUYỀN CONTEXT
               ),
               const SizedBox(height: 16),
-              _buildPriorityField(priority: priority, onChanged: onPriorityChanged),
+              _buildPriorityField(
+                priority: priority,
+                onChanged: onPriorityChanged,
+              ),
               const SizedBox(height: 16),
-              if (members.isNotEmpty) 
-                _buildAssigneeField(
-                  members: members,
-                  selectedAssignee: selectedAssignee,
-                  onChanged: onAssigneeChanged,
-                ),
+              // ✅ LUÔN HIỂN THỊ PHẦN ASSIGNEE (loading hoặc dropdown)
+              _buildAssigneeField(
+                members: members,
+                selectedAssignee: selectedAssignee,
+                onChanged: onAssigneeChanged,
+                isLoading: isLoadingMembers,
+              ),
               const SizedBox(height: 16),
               _buildTagsField(
                 tags: tags,
@@ -96,7 +99,9 @@ class CreateTaskUIComponents {
         border: OutlineInputBorder(),
         prefixIcon: Icon(Icons.title),
       ),
-      validator: (value) => value == null || value.isEmpty ? 'Title is required' : null,
+      validator:
+          (value) =>
+              value == null || value.isEmpty ? 'Title is required' : null,
     );
   }
 
@@ -133,8 +138,8 @@ class CreateTaskUIComponents {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              deadline == null 
-                  ? 'Select deadline' 
+              deadline == null
+                  ? 'Select deadline'
                   : '${deadline.day}/${deadline.month}/${deadline.year}',
               style: TextStyle(
                 color: deadline == null ? Colors.grey : Colors.black,
@@ -177,41 +182,42 @@ class CreateTaskUIComponents {
         border: OutlineInputBorder(),
         prefixIcon: Icon(Icons.flag),
       ),
-      items: TaskPriority.values.map((priority) {
-        Color color;
-        switch (priority) {
-          case TaskPriority.urgent:
-            color = Colors.purple;
-            break;
-          case TaskPriority.high:
-            color = Colors.red;
-            break;
-          case TaskPriority.medium:
-            color = Colors.orange;
-            break;
-          case TaskPriority.low:
-            color = Colors.green;
-            break;
-        }
-        
-        return DropdownMenuItem(
-          value: priority,
-          child: Row(
-            children: [
-              Container(
-                width: 12,
-                height: 12,
-                decoration: BoxDecoration(
-                  color: color,
-                  shape: BoxShape.circle,
-                ),
+      items:
+          TaskPriority.values.map((priority) {
+            Color color;
+            switch (priority) {
+              case TaskPriority.urgent:
+                color = Colors.purple;
+                break;
+              case TaskPriority.high:
+                color = Colors.red;
+                break;
+              case TaskPriority.medium:
+                color = Colors.orange;
+                break;
+              case TaskPriority.low:
+                color = Colors.green;
+                break;
+            }
+
+            return DropdownMenuItem(
+              value: priority,
+              child: Row(
+                children: [
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: color,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(priority.name.toUpperCase()),
+                ],
               ),
-              const SizedBox(width: 8),
-              Text(priority.name.toUpperCase()),
-            ],
-          ),
-        );
-      }).toList(),
+            );
+          }).toList(),
       onChanged: (value) => onChanged(value ?? TaskPriority.medium),
     );
   }
@@ -221,7 +227,53 @@ class CreateTaskUIComponents {
     required List<User> members,
     required User? selectedAssignee,
     required Function(User?) onChanged,
+    required bool isLoading, // ✅ THÊM PARAMETER
   }) {
+    // ✅ HIỂN THỊ LOADING KHI ĐANG TẢI MEMBERS
+    if (isLoading) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: const Row(
+          children: [
+            Icon(Icons.person, color: Colors.grey),
+            SizedBox(width: 12),
+            Text('Loading members...', style: TextStyle(color: Colors.grey)),
+            SizedBox(width: 12),
+            SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // ✅ HIỂN THỊ MESSAGE NẾU KHÔNG CÓ MEMBERS
+    if (members.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: const Row(
+          children: [
+            Icon(Icons.person, color: Colors.grey),
+            SizedBox(width: 12),
+            Text(
+              'No members in this project',
+              style: TextStyle(color: Colors.grey),
+            ),
+          ],
+        ),
+      );
+    }
+
     return DropdownButtonFormField<User?>(
       value: selectedAssignee,
       decoration: const InputDecoration(
@@ -230,14 +282,15 @@ class CreateTaskUIComponents {
         prefixIcon: Icon(Icons.person),
       ),
       items: [
-        const DropdownMenuItem<User?>(
-          value: null,
-          child: Text('Unassigned'),
-        ),
-        ...members.map((user) => DropdownMenuItem<User?>(
-          value: user,
-          child: Text(user.displayName),
-        )).toList(),
+        const DropdownMenuItem<User?>(value: null, child: Text('Unassigned')),
+        ...members
+            .map(
+              (user) => DropdownMenuItem<User?>(
+                value: user,
+                child: Text(user.displayName),
+              ),
+            )
+            .toList(),
       ],
       onChanged: onChanged,
     );
@@ -262,10 +315,14 @@ class CreateTaskUIComponents {
           spacing: 8,
           runSpacing: 8,
           children: [
-            ...tags.map((tag) => Chip(
-              label: Text(tag),
-              onDeleted: () => onTagRemoved(tag),
-            )).toList(),
+            ...tags
+                .map(
+                  (tag) => Chip(
+                    label: Text(tag),
+                    onDeleted: () => onTagRemoved(tag),
+                  ),
+                )
+                .toList(),
             SizedBox(
               width: 150,
               child: TextField(
@@ -302,19 +359,17 @@ class CreateTaskUIComponents {
         padding: const EdgeInsets.symmetric(vertical: 16),
       ),
       onPressed: isLoading ? null : onCreateTask,
-      child: isLoading
-          ? const SizedBox(
-              height: 20,
-              width: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation(Colors.white),
-              ),
-            )
-          : const Text(
-              'Create Task',
-              style: TextStyle(fontSize: 16),
-            ),
+      child:
+          isLoading
+              ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation(Colors.white),
+                ),
+              )
+              : const Text('Create Task', style: TextStyle(fontSize: 16)),
     );
   }
 }

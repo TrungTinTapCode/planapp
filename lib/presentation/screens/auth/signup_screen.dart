@@ -28,12 +28,14 @@ class _SignupScreenContent extends StatefulWidget {
 
 class _SignupScreenContentState extends State<_SignupScreenContent> {
   final _nameController = TextEditingController();
+  final _usernameController = TextEditingController(); // ✅ THÊM USERNAME
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
   @override
   void dispose() {
     _nameController.dispose();
+    _usernameController.dispose(); // ✅ DISPOSE USERNAME
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -85,6 +87,7 @@ class _SignupScreenContentState extends State<_SignupScreenContent> {
           SignupUIComponents.signupHeader(),
           SignupUIComponents.signupForm(
             nameController: _nameController,
+            usernameController: _usernameController, // ✅ TRUYỀN USERNAME
             emailController: _emailController,
             passwordController: _passwordController,
             onSignup: () => _handleSignup(context),
@@ -100,11 +103,17 @@ class _SignupScreenContentState extends State<_SignupScreenContent> {
   // Xử lý sự kiện đăng ký
   void _handleSignup(BuildContext context) {
     final name = _nameController.text.trim();
+    final username = _usernameController.text.trim(); // ✅ LẤY USERNAME
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
-    if (name.isEmpty || email.isEmpty || password.isEmpty) {
+    if (name.isEmpty || username.isEmpty || email.isEmpty || password.isEmpty) {
       _showErrorSnackbar(context, 'Vui lòng nhập đầy đủ thông tin');
+      return;
+    }
+
+    if (username.length < 3) {
+      _showErrorSnackbar(context, 'Tên tài khoản phải có ít nhất 3 ký tự');
       return;
     }
 
@@ -113,7 +122,10 @@ class _SignupScreenContentState extends State<_SignupScreenContent> {
       return;
     }
 
-    context.read<AuthBloc>().add(AuthRegisterRequested(email, password, name));
+    // ✅ TRUYỀN USERNAME LÀM displayName
+    context.read<AuthBloc>().add(
+      AuthRegisterRequested(email, password, username),
+    );
   }
 
   // Hiển thị lỗi

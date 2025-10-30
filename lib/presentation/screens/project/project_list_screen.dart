@@ -14,19 +14,22 @@ import 'project_detail_screen.dart';
 import 'project_list_ui.dart';
 
 class ProjectListScreen extends StatelessWidget {
-  const ProjectListScreen({super.key});
+  final bool embedded; // ✅ Cho phép nhúng vào TabBarView
+  const ProjectListScreen({super.key, this.embedded = false});
 
   @override
   Widget build(BuildContext context) {
-    return const _ProjectListScreenContent();
+    return _ProjectListScreenContent(embedded: embedded);
   }
 }
 
 class _ProjectListScreenContent extends StatefulWidget {
-  const _ProjectListScreenContent();
+  final bool embedded;
+  const _ProjectListScreenContent({this.embedded = false});
 
   @override
-  State<_ProjectListScreenContent> createState() => _ProjectListScreenContentState();
+  State<_ProjectListScreenContent> createState() =>
+      _ProjectListScreenContentState();
 }
 
 class _ProjectListScreenContentState extends State<_ProjectListScreenContent> {
@@ -40,14 +43,24 @@ class _ProjectListScreenContentState extends State<_ProjectListScreenContent> {
   void _loadProjects() {
     final authState = context.read<AuthBloc>().state;
     if (authState is AuthAuthenticated) {
-      context.read<ProjectBloc>().add(
-            ProjectLoadRequested(authState.user.id),
-          );
+      context.read<ProjectBloc>().add(ProjectLoadRequested(authState.user.id));
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (widget.embedded) {
+      return Stack(
+        children: [
+          _buildProjectList(),
+          Positioned(
+            right: 16,
+            bottom: 16,
+            child: _buildFloatingActionButton(),
+          ),
+        ],
+      );
+    }
     return Scaffold(
       appBar: ProjectListUI.appBar(),
       body: _buildProjectList(),
@@ -75,7 +88,7 @@ class _ProjectListScreenContentState extends State<_ProjectListScreenContent> {
 
         if (state is ProjectLoadSuccess) {
           final projects = state.projects;
-          
+
           if (projects.isEmpty) {
             return ProjectListUI.emptyState(
               onCreateProject: _navigateToCreateProject,
@@ -119,16 +132,31 @@ class _ProjectListScreenContentState extends State<_ProjectListScreenContent> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const CreateProjectScreen()),
-    ).then((_) => _loadProjects());
+    ).then((result) {
+      if (result is ProjectEntity) {
+        // Hiển thị thông báo thành công rồi điều hướng tới màn chi tiết
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Tạo dự án thành công!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+        Future.delayed(const Duration(milliseconds: 300), () {
+          _navigateToProjectDetail(result);
+        });
+      } else {
+        // Nếu không có result (đóng màn hình), refresh danh sách
+        _loadProjects();
+      }
+    });
   }
 
   // Điều hướng đến màn hình chi tiết project
   void _navigateToProjectDetail(ProjectEntity project) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => ProjectDetailScreen(project: project),
-      ),
+      MaterialPageRoute(builder: (_) => ProjectDetailScreen(project: project)),
     );
   }
 }

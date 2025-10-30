@@ -7,8 +7,10 @@ import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
 import '../auth/login_screen.dart';
-import '../project/project_list_screen.dart'; // ✅ THÊM IMPORT
+import '../project/project_list_screen.dart';
 import 'home_ui.dart';
+import '../notification/notification_screen.dart';
+import '../profile/profile_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -24,27 +26,39 @@ class _HomeScreenContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: HomeUIComponents.homeAppBar(
-        title: 'Trang chủ',
-        onLogout: () => _handleLogout(context),
-      ),
-      body: BlocListener<AuthBloc, AuthState>(
-        listener: (context, state) {
-          if (state is AuthLoggedOut) {
-            _navigateToLoginScreen(context);
-          }
-        },
-        child: const _HomeContent(),
+    return DefaultTabController(
+      length: 4,
+      child: Scaffold(
+        appBar: HomeUIComponents.homeAppBar(
+          title: 'PlanApp',
+          onLogout: () => _handleLogout(context),
+          bottom: const TabBar(
+            isScrollable: false,
+            tabs: [
+              Tab(text: 'Home', icon: Icon(Icons.home)),
+              Tab(text: 'Dự án', icon: Icon(Icons.folder_open)),
+              Tab(text: 'Thông báo', icon: Icon(Icons.notifications)),
+              Tab(text: 'Cá nhân', icon: Icon(Icons.person)),
+            ],
+          ),
+        ),
+        body: BlocListener<AuthBloc, AuthState>(
+          listener: (context, state) {
+            if (state is AuthLoggedOut) {
+              _navigateToLoginScreen(context);
+            }
+          },
+          child: const _HomeTabView(),
+        ),
       ),
     );
   }
 
   void _handleLogout(BuildContext context) {
     context.read<AuthBloc>().add(AuthLogoutRequested());
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Đang đăng xuất...')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Đang đăng xuất...')));
   }
 
   void _navigateToLoginScreen(BuildContext context) {
@@ -56,8 +70,24 @@ class _HomeScreenContent extends StatelessWidget {
   }
 }
 
-class _HomeContent extends StatelessWidget {
-  const _HomeContent();
+class _HomeTabView extends StatelessWidget {
+  const _HomeTabView();
+
+  @override
+  Widget build(BuildContext context) {
+    return TabBarView(
+      children: const [
+        _HomeTabContent(),
+        ProjectListScreen(embedded: true),
+        NotificationScreen(),
+        ProfileScreen(),
+      ],
+    );
+  }
+}
+
+class _HomeTabContent extends StatelessWidget {
+  const _HomeTabContent();
 
   @override
   Widget build(BuildContext context) {
@@ -65,21 +95,10 @@ class _HomeContent extends StatelessWidget {
       builder: (context, state) {
         final email = state is AuthAuthenticated ? state.user.email : '';
         final isLoading = state is AuthLoading;
-        
-        return HomeUIComponents.homeContent(
-          email, 
-          isLoading,
-          () => _navigateToProjects(context), // ✅ THÊM CALLBACK
-        );
+        return HomeUIComponents.homeContent(email, isLoading);
       },
     );
   }
-
-  // ✅ THÊM METHOD ĐIỀU HƯỚNG ĐẾN PROJECT LIST
-  void _navigateToProjects(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const ProjectListScreen()),
-    );
-  }
 }
+
+// Đã thay thế placeholder bằng NotificationScreen và ProfileScreen

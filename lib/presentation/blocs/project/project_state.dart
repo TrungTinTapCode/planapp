@@ -32,3 +32,13 @@ class ProjectError extends ProjectState {
   @override
   List<Object?> get props => [message];
 }
+
+// ✅ State khi tạo project thành công, trả về project vừa tạo
+class ProjectCreated extends ProjectState {
+  final ProjectEntity project;
+
+  ProjectCreated(this.project);
+
+  @override
+  List<Object?> get props => [project];
+}

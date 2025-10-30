@@ -8,6 +8,7 @@ import '../../blocs/project/project_event.dart';
 import '../../blocs/project/project_state.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_state.dart';
+import '../../../domain/entities/project.dart';
 import 'create_project_ui.dart';
 
 class CreateProjectScreen extends StatelessWidget {
@@ -23,10 +24,12 @@ class _CreateProjectScreenContent extends StatefulWidget {
   const _CreateProjectScreenContent();
 
   @override
-  State<_CreateProjectScreenContent> createState() => _CreateProjectScreenContentState();
+  State<_CreateProjectScreenContent> createState() =>
+      _CreateProjectScreenContentState();
 }
 
-class _CreateProjectScreenContentState extends State<_CreateProjectScreenContent> {
+class _CreateProjectScreenContentState
+    extends State<_CreateProjectScreenContent> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -53,9 +56,9 @@ class _CreateProjectScreenContentState extends State<_CreateProjectScreenContent
         if (state is ProjectError) {
           _showErrorSnackbar(context, state.message);
         }
-        // Khi tạo project thành công, quay lại màn hình trước
-        if (state is ProjectLoadSuccess) {
-          Navigator.pop(context);
+        // Khi tạo project thành công, trả project về màn hình trước
+        if (state is ProjectCreated) {
+          Navigator.pop<ProjectEntity>(context, state.project);
         }
       },
       child: Padding(

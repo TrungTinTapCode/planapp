@@ -23,12 +23,12 @@ class ProjectBloc extends Bloc<ProjectEvent, ProjectState> {
     required UpdateProject updateProject,
     required DeleteProject deleteProject,
     required AddMemberToProject addMemberToProject,
-  })  : _createProject = createProject,
-        _getProjects = getProjects,
-        _updateProject = updateProject,
-        _deleteProject = deleteProject,
-        _addMemberToProject = addMemberToProject,
-        super(ProjectInitial()) {
+  }) : _createProject = createProject,
+       _getProjects = getProjects,
+       _updateProject = updateProject,
+       _deleteProject = deleteProject,
+       _addMemberToProject = addMemberToProject,
+       super(ProjectInitial()) {
     on<ProjectLoadRequested>(_onProjectLoadRequested);
     on<ProjectCreateRequested>(_onProjectCreateRequested);
     on<ProjectUpdateRequested>(_onProjectUpdateRequested);
@@ -58,12 +58,13 @@ class ProjectBloc extends Bloc<ProjectEvent, ProjectState> {
     Emitter<ProjectState> emit,
   ) async {
     try {
-      await _createProject.execute(
+      final created = await _createProject.execute(
         name: event.name,
         description: event.description,
         ownerId: event.ownerId,
       );
-      // Không emit state mới ở đây vì stream sẽ tự động cập nhật
+      // Emit state để màn hình tạo có thể nhận project vừa tạo
+      emit(ProjectCreated(created));
     } catch (e) {
       emit(ProjectError('Failed to create project: $e'));
     }

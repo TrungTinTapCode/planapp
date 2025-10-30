@@ -8,18 +8,14 @@ class HomeUIComponents {
   static AppBar homeAppBar({
     required String title,
     required VoidCallback onLogout,
+    PreferredSizeWidget? bottom,
   }) {
     return AppBar(
       title: Text(title),
       backgroundColor: Colors.blue,
       foregroundColor: Colors.white,
+      bottom: bottom,
       actions: [
-        // ✅ THÊM NÚT DEBUG PROJECTS
-        IconButton(
-          icon: const Icon(Icons.folder),
-          onPressed: () {}, // Sẽ được xử lý trong screen
-          tooltip: 'Dự án',
-        ),
         IconButton(
           icon: const Icon(Icons.logout),
           onPressed: onLogout,
@@ -57,16 +53,12 @@ class HomeUIComponents {
   }
 
   // Main content cho home
-  static Widget homeContent(String email, bool isLoading, VoidCallback onProjectsTap) {
+  static Widget homeContent(String email, bool isLoading) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.task_alt,
-            size: 80,
-            color: Colors.blue,
-          ),
+          const Icon(Icons.task_alt, size: 80, color: Colors.blue),
           const SizedBox(height: 20),
           const Text(
             'Chào mừng bạn đến PlanApp 👋',
@@ -80,10 +72,7 @@ class HomeUIComponents {
           const SizedBox(height: 10),
           Text(
             'Quản lý công việc hiệu quả',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
           ),
           const SizedBox(height: 30),
           // Hiển thị thông tin user
@@ -91,20 +80,6 @@ class HomeUIComponents {
             userInfoCard(email),
             const SizedBox(height: 20),
           ],
-          // ✅ THÊM NÚT DEBUG PROJECTS
-          Container(
-            width: 200,
-            child: ElevatedButton.icon(
-              onPressed: onProjectsTap,
-              icon: const Icon(Icons.folder_open),
-              label: const Text('Dự án của tôi'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-            ),
-          ),
           const SizedBox(height: 10),
           // Hiển thị loading
           if (isLoading) ...[

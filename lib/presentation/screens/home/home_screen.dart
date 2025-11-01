@@ -6,6 +6,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
+import '../../blocs/notification/notification_bloc.dart';
+import '../../blocs/notification/notification_state.dart';
 import '../auth/login_screen.dart';
 import '../project/project_list_screen.dart';
 import 'home_ui.dart';
@@ -37,7 +39,7 @@ class _HomeScreenContent extends StatelessWidget {
             tabs: [
               Tab(text: 'Home', icon: Icon(Icons.home)),
               Tab(text: 'Dự án', icon: Icon(Icons.folder_open)),
-              Tab(text: 'Thông báo', icon: Icon(Icons.notifications)),
+              Tab(icon: _NotificationsTabIcon(), text: 'Thông báo'),
               Tab(text: 'Cá nhân', icon: Icon(Icons.person)),
             ],
           ),
@@ -102,3 +104,54 @@ class _HomeTabContent extends StatelessWidget {
 }
 
 // Đã thay thế placeholder bằng NotificationScreen và ProfileScreen
+
+class _NotificationsTabIcon extends StatelessWidget {
+  const _NotificationsTabIcon();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<NotificationBloc, NotificationState>(
+      builder: (context, state) {
+        int unread = 0;
+        if (state is NotificationLoadSuccess) {
+          unread = state.items.where((e) => !e.isRead).length;
+        }
+
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            const Icon(Icons.notifications),
+            if (unread > 0)
+              Positioned(
+                right: -6,
+                top: -2,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 1,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 14,
+                    minHeight: 12,
+                  ),
+                  child: Text(
+                    unread > 99 ? '99+' : '$unread',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}

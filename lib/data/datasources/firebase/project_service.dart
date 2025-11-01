@@ -42,9 +42,44 @@ class ProjectService {
   }
 
   Future<void> addMember(String projectId, String memberId) async {
-    await _firestore.collection('projects').doc(projectId).update({
-      'memberIds': FieldValue.arrayUnion([memberId]),
+    String projectName = 'Dự án';
+
+    final projectRef = _firestore.collection('projects').doc(projectId);
+
+    // Sử dụng transaction để chỉ thêm khi chưa có và lấy tên dự án an toàn
+    final added = await _firestore.runTransaction<bool>((tx) async {
+      final snap = await tx.get(projectRef);
+      if (!snap.exists) return false;
+      final data = snap.data() as Map<String, dynamic>;
+      projectName = (data['name'] as String?) ?? 'Dự án';
+      final List<dynamic> currentIds =
+          (data['memberIds'] as List<dynamic>?) ?? [];
+      final alreadyIn = currentIds.cast<String>().contains(memberId);
+      if (alreadyIn) return false;
+
+      final updated = List<String>.from(currentIds)..add(memberId);
+      tx.update(projectRef, {'memberIds': updated});
+      return true;
     });
+
+    // Nếu thực sự vừa được thêm mới -> ghi 1 bản ghi thông báo vào hộp thư của user
+    if (added) {
+      final nref =
+          _firestore
+              .collection('users')
+              .doc(memberId)
+              .collection('notifications')
+              .doc();
+      await nref.set({
+        'title': 'Bạn đã được thêm vào dự án',
+        'body': 'Dự án: $projectName',
+        'type': 'PROJECT_ADDED',
+        'isRead': false,
+        'createdAt': FieldValue.serverTimestamp(),
+        'projectId': projectId,
+        'taskId': null,
+      });
+    }
   }
 
   Future<void> removeMember(String projectId, String memberId) async {

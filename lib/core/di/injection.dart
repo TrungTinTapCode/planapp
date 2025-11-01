@@ -1,6 +1,8 @@
 import 'package:get_it/get_it.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../../data/datasources/firebase/auth_service.dart';
 import '../../data/datasources/firebase/project_service.dart';
@@ -40,6 +42,11 @@ import '../../data/datasources/firebase/chat_service.dart';
 import '../../data/repositories_impl/chat_repository_impl.dart';
 import '../../domain/repositories/chat_repository.dart';
 import '../../presentation/blocs/chat/chat_bloc.dart';
+import '../../data/datasources/firebase/messaging_service.dart';
+import '../../data/datasources/firebase/notification_service.dart';
+import '../../domain/repositories/notification_repository.dart';
+import '../../data/repositories_impl/notification_repository_impl.dart';
+import '../../presentation/blocs/notification/notification_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -53,6 +60,14 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => ProjectService(sl()));
   sl.registerLazySingleton(() => TaskService(sl()));
   sl.registerLazySingleton(() => ChatService(sl()));
+  sl.registerLazySingleton(
+    () => MessagingService(
+      FirebaseMessaging.instance,
+      sl(),
+      FlutterLocalNotificationsPlugin(),
+    ),
+  );
+  sl.registerLazySingleton(() => NotificationService(sl()));
 
   // ✅ Repositories
   sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(sl()));
@@ -62,6 +77,9 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton<TaskRepository>(() => TaskRepositoryImpl(sl()));
   ;
   sl.registerLazySingleton<ChatRepository>(() => ChatRepositoryImpl(sl()));
+  sl.registerLazySingleton<NotificationRepository>(
+    () => NotificationRepositoryImpl(sl()),
+  );
 
   // ✅ Auth UseCases
   sl.registerLazySingleton(() => LoginUser(sl()));
@@ -120,4 +138,5 @@ Future<void> initDependencies() async {
   );
 
   sl.registerFactory(() => ChatBloc(chatRepository: sl()));
+  sl.registerFactory(() => NotificationBloc(repo: sl()));
 }

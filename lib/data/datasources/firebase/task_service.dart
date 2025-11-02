@@ -17,6 +17,11 @@ class TaskService {
         .collection('tasks')
         .doc(task.id)
         .set(task.toJson());
+
+    // Nếu task có assignee ngay khi tạo -> tạo thông báo cho người được gán
+    if (task.assignee != null) {
+      await createTaskAssignedNotification(task.assignee!.id, task);
+    }
   }
 
   Future<void> updateTask(TaskModel task) async {
@@ -74,5 +79,27 @@ class TaskService {
         .doc(projectId)
         .collection('tasks')
         .snapshots();
+  }
+
+  /// Tạo thông báo cho user khi được gán vào một task
+  Future<void> createTaskAssignedNotification(
+    String userId,
+    TaskModel task,
+  ) async {
+    final notifRef =
+        _firestore
+            .collection('users')
+            .doc(userId)
+            .collection('notifications')
+            .doc();
+    await notifRef.set({
+      'title': 'Bạn được giao nhiệm vụ mới',
+      'body': 'Công việc: ${task.title}',
+      'type': 'TASK_ASSIGNED',
+      'isRead': false,
+      'createdAt': FieldValue.serverTimestamp(),
+      'projectId': task.projectId,
+      'taskId': task.id,
+    });
   }
 }

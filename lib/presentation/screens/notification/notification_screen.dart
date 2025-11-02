@@ -9,6 +9,10 @@ import '../../blocs/notification/notification_bloc.dart';
 import '../../blocs/notification/notification_state.dart';
 import '../../blocs/notification/notification_event.dart';
 import '../../../domain/entities/app_notification.dart';
+import '../../../core/di/injection.dart';
+import '../../../domain/repositories/project_repository.dart';
+import '../project/project_detail_screen.dart';
+import '../task/task_detail_screen.dart';
 import 'notification_ui.dart';
 
 // Lớp model UI nếu cần tuỳ biến thêm trong tương lai
@@ -19,6 +23,9 @@ class NotificationItem {
   final DateTime time;
   final bool unread;
   final String id;
+  final String type;
+  final String? projectId;
+  final String? taskId;
 
   const NotificationItem({
     required this.id,
@@ -27,6 +34,9 @@ class NotificationItem {
     required this.subtitle,
     required this.time,
     this.unread = false,
+    required this.type,
+    this.projectId,
+    this.taskId,
   });
 }
 
@@ -60,6 +70,24 @@ class _NotificationScreenState extends State<NotificationScreen> {
   Widget build(BuildContext context) {
     return BlocBuilder<NotificationBloc, NotificationState>(
       builder: (context, state) {
+        if (state is NotificationError) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.redAccent),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Không thể tải thông báo:\n${state.message}',
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
         List<NotificationItem> items = [];
         if (state is NotificationLoadSuccess) {
           items = state.items.map(_mapEntityToItem).toList();
@@ -136,6 +164,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
       case 'DEADLINE_SOON':
         icon = Icons.access_time;
         break;
+      case 'PROJECT_ADDED':
+        icon = Icons.folder_shared;
+        break;
       default:
         icon = Icons.notifications;
     }
@@ -146,6 +177,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
       subtitle: e.body,
       time: e.createdAt,
       unread: !e.isRead,
+      type: e.type,
+      projectId: e.projectId,
+      taskId: e.taskId,
     );
   }
 
@@ -157,6 +191,63 @@ class _NotificationScreenState extends State<NotificationScreen> {
         NotificationMarkAsRead(authState.user.id, item.id),
       );
     }
-    // TODO: Điều hướng tới màn hình phù hợp theo loại thông báo
+    // Điều hướng tới màn hình phù hợp theo loại thông báo
+    if (item.type == 'PROJECT_ADDED' ||
+        (item.projectId != null && item.taskId == null)) {
+      if (item.projectId != null) {
+        _navigateToProjectDetail(context, item.projectId!);
+      }
+      return;
+    }
+    if (item.type == 'TASK_ASSIGNED' ||
+        (item.projectId != null && item.taskId != null)) {
+      if (item.projectId != null && item.taskId != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (_) => TaskDetailScreen(
+                  projectId: item.projectId!,
+                  taskId: item.taskId!,
+                ),
+          ),
+        );
+      }
+      return;
+    }
+  }
+
+  Future<void> _navigateToProjectDetail(
+    BuildContext context,
+    String projectId,
+  ) async {
+    // Hiển thị loading trong lúc fetch ProjectEntity
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+    try {
+      final repo = sl<ProjectRepository>();
+      final project = await repo.getProjectById(projectId);
+      Navigator.of(context).pop(); // đóng loading
+      if (project == null) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Không tìm thấy dự án')));
+        return;
+      }
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ProjectDetailScreen(project: project),
+        ),
+      );
+    } catch (e) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Lỗi mở dự án: $e')));
+    }
   }
 }

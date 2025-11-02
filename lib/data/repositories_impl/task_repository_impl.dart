@@ -78,6 +78,14 @@ class TaskRepositoryImpl implements TaskRepository {
       );
 
       await _taskService.updateTask(updatedModel);
+
+      // Nếu có assignee mới, tạo thông báo cho người đó
+      if (assignee != null && assignee.id != model.assignee?.id) {
+        await _taskService.createTaskAssignedNotification(
+          assignee.id,
+          updatedModel,
+        );
+      }
       return updatedModel;
     } catch (e) {
       throw Exception('Failed to assign task: $e');

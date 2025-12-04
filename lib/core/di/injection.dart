@@ -33,6 +33,7 @@ import '../../domain/usecases/task/delete_task.dart';
 import '../../domain/usecases/task/get_tasks_by_project.dart';
 import '../../domain/usecases/task/assign_task.dart';
 import '../../domain/usecases/task/set_task_completed.dart';
+import '../../domain/usecases/task/set_task_status.dart';
 import '../../domain/usecases/task/get_task_by_id.dart';
 
 import '../../presentation/blocs/auth/auth_bloc.dart';
@@ -47,6 +48,7 @@ import '../../data/datasources/firebase/notification_service.dart';
 import '../../domain/repositories/notification_repository.dart';
 import '../../data/repositories_impl/notification_repository_impl.dart';
 import '../../presentation/blocs/notification/notification_bloc.dart';
+import '../../presentation/blocs/kanban/kanban_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -102,6 +104,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => GetTasksByProject(sl()));
   sl.registerLazySingleton(() => AssignTask(sl()));
   sl.registerLazySingleton(() => SetTaskCompleted(sl()));
+  sl.registerLazySingleton(() => SetTaskStatus(sl()));
   sl.registerLazySingleton(() => GetTaskById(sl()));
 
   // ✅ Blocs
@@ -133,10 +136,12 @@ Future<void> initDependencies() async {
       getTasksByProject: sl(),
       assignTask: sl(),
       setTaskCompleted: sl(),
+      setTaskStatus: sl(),
       getTaskById: sl(),
     ),
   );
 
   sl.registerFactory(() => ChatBloc(chatRepository: sl()));
   sl.registerFactory(() => NotificationBloc(repo: sl()));
+  sl.registerFactory(() => KanbanBloc(taskRepository: sl()));
 }

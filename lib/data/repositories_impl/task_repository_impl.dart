@@ -141,4 +141,29 @@ class TaskRepositoryImpl implements TaskRepository {
       return snapshot.docs.map((doc) => TaskModel.fromFirestore(doc)).toList();
     });
   }
+
+  @override
+  Stream<List<Task>> streamTasksAssignedToUser(String userId) {
+    return _taskService
+        .streamTasksAssignedToUser(userId)
+        .map((models) => models);
+  }
+
+  @override
+  Future<void> updateTaskStatus({
+    required String projectId,
+    required String taskId,
+    required TaskStatus status,
+  }) async {
+    try {
+      await _taskService.updateTaskStatus(
+        projectId: projectId,
+        taskId: taskId,
+        status: status.name,
+        isCompleted: status == TaskStatus.done,
+      );
+    } catch (e) {
+      throw Exception('Failed to update task status: $e');
+    }
+  }
 }

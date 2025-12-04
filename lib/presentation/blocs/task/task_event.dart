@@ -66,6 +66,16 @@ class SetTaskCompletedRequested extends TaskEvent {
   List<Object?> get props => [projectId, taskId, isCompleted];
 }
 
+class SetTaskStatusRequested extends TaskEvent {
+  final String projectId;
+  final String taskId;
+  final TaskStatus status;
+  const SetTaskStatusRequested(this.projectId, this.taskId, this.status);
+
+  @override
+  List<Object?> get props => [projectId, taskId, status];
+}
+
 class GetTaskByIdRequested extends TaskEvent {
   final String projectId;
   final String taskId;

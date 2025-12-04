@@ -13,6 +13,7 @@ import '../project/project_list_screen.dart';
 import 'home_ui.dart';
 import '../notification/notification_screen.dart';
 import '../profile/profile_screen.dart';
+import 'widgets/kanban_board_widget.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -97,7 +98,22 @@ class _HomeTabContent extends StatelessWidget {
       builder: (context, state) {
         final email = state is AuthAuthenticated ? state.user.email : '';
         final isLoading = state is AuthLoading;
-        return HomeUIComponents.homeContent(email, isLoading);
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              HomeUIComponents.homeContent(email, isLoading),
+              const SizedBox(height: 24),
+              const Text(
+                'Công việc:',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              const KanbanBoardWidget(),
+            ],
+          ),
+        );
       },
     );
   }

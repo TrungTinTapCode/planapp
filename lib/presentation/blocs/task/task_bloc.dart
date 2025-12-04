@@ -7,6 +7,7 @@ import '../../../domain/usecases/task/delete_task.dart';
 import '../../../domain/usecases/task/get_tasks_by_project.dart';
 import '../../../domain/usecases/task/assign_task.dart';
 import '../../../domain/usecases/task/set_task_completed.dart';
+import '../../../domain/usecases/task/set_task_status.dart';
 import '../../../domain/usecases/task/get_task_by_id.dart';
 import 'dart:async';
 
@@ -17,6 +18,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
   final GetTasksByProject _getTasksByProject;
   final AssignTask _assignTask;
   final SetTaskCompleted _setTaskCompleted;
+  final SetTaskStatus _setTaskStatus;
   final GetTaskById _getTaskById;
 
   StreamSubscription? _taskStreamSubscription;
@@ -28,6 +30,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     required GetTasksByProject getTasksByProject,
     required AssignTask assignTask,
     required SetTaskCompleted setTaskCompleted,
+    required SetTaskStatus setTaskStatus,
     required GetTaskById getTaskById,
   }) : _createTask = createTask,
        _updateTask = updateTask,
@@ -35,6 +38,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
        _getTasksByProject = getTasksByProject,
        _assignTask = assignTask,
        _setTaskCompleted = setTaskCompleted,
+       _setTaskStatus = setTaskStatus,
        _getTaskById = getTaskById,
        super(TaskInitial()) {
     on<LoadTasksRequested>(_onLoadTasks);
@@ -43,6 +47,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     on<DeleteTaskRequested>(_onDeleteTask);
     on<AssignTaskRequested>(_onAssignTask);
     on<SetTaskCompletedRequested>(_onSetCompleted);
+    on<SetTaskStatusRequested>(_onSetStatus);
     on<GetTaskByIdRequested>(_onGetById);
     on<TasksUpdated>(_onTasksUpdated);
   }
@@ -146,6 +151,25 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
         event.taskId,
         event.isCompleted,
       );
+      emit(TaskOperationSuccess(t));
+    } catch (e) {
+      emit(TaskOperationFailure(e.toString()));
+    }
+  }
+
+  Future<void> _onSetStatus(
+    SetTaskStatusRequested event,
+    Emitter<TaskState> emit,
+  ) async {
+    emit(TaskLoading());
+    try {
+      await _setTaskStatus.execute(
+        projectId: event.projectId,
+        taskId: event.taskId,
+        status: event.status,
+      );
+      // Sau khi cập nhật trạng thái, lấy lại task để emit TaskOperationSuccess
+      final t = await _getTaskById.execute(event.projectId, event.taskId);
       emit(TaskOperationSuccess(t));
     } catch (e) {
       emit(TaskOperationFailure(e.toString()));

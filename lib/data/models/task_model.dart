@@ -20,6 +20,7 @@ class TaskModel extends Task {
     required super.createdAt,
     required super.creator,
     super.isCompleted = false,
+    super.status = TaskStatus.todo,
   });
 
   factory TaskModel.fromJson(Map<String, dynamic> json) {
@@ -47,6 +48,7 @@ class TaskModel extends Task {
               : DateTime.now(),
       creator: _userFromJson(json['creator']), // ✅ SỬA: Dùng helper function
       isCompleted: json['isCompleted'] as bool? ?? false,
+      status: _statusFromJson(json['status'], json['isCompleted']),
     );
   }
 
@@ -66,6 +68,7 @@ class TaskModel extends Task {
       'createdAt': Timestamp.fromDate(createdAt),
       'creator': _userToJson(creator), // ✅ SỬA: Dùng helper function
       'isCompleted': isCompleted,
+      'status': status.name,
     };
   }
 
@@ -82,6 +85,7 @@ class TaskModel extends Task {
       createdAt: task.createdAt,
       creator: task.creator,
       isCompleted: task.isCompleted,
+      status: task.status,
     );
   }
 
@@ -107,5 +111,21 @@ class TaskModel extends Task {
   factory TaskModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     return TaskModel.fromJson({...data, 'id': doc.id});
+  }
+
+  static TaskStatus _statusFromJson(dynamic raw, dynamic rawCompleted) {
+    if (raw is String) {
+      switch (raw) {
+        case 'todo':
+          return TaskStatus.todo;
+        case 'inProgress':
+          return TaskStatus.inProgress;
+        case 'done':
+          return TaskStatus.done;
+      }
+    }
+    // Fallback từ isCompleted nếu chưa có field status trong dữ liệu cũ
+    final completed = rawCompleted as bool? ?? false;
+    return completed ? TaskStatus.done : TaskStatus.todo;
   }
 }

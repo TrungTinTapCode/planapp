@@ -4,6 +4,9 @@
 import 'package:planapp/domain/entities/task_priority.dart';
 import 'package:planapp/domain/entities/user.dart';
 
+/// Trạng thái của Task
+enum TaskStatus { todo, inProgress, done }
+
 /// Entity đại diện cho một task trong project
 class Task {
   /// ID duy nhất của task
@@ -39,6 +42,9 @@ class Task {
   /// Trạng thái hoàn thành của task
   final bool isCompleted;
 
+  /// Trạng thái tiến độ (3 trạng thái: todo/inProgress/done)
+  final TaskStatus status;
+
   const Task({
     required this.id,
     required this.projectId,
@@ -51,6 +57,7 @@ class Task {
     required this.createdAt,
     required this.creator,
     this.isCompleted = false,
+    this.status = TaskStatus.todo,
   });
 
   /// Copy task với các thuộc tính mới
@@ -66,6 +73,7 @@ class Task {
     DateTime? createdAt,
     User? creator,
     bool? isCompleted,
+    TaskStatus? status,
   }) {
     return Task(
       id: id ?? this.id,
@@ -79,6 +87,7 @@ class Task {
       createdAt: createdAt ?? this.createdAt,
       creator: creator ?? this.creator,
       isCompleted: isCompleted ?? this.isCompleted,
+      status: status ?? this.status,
     );
   }
 }

@@ -32,4 +32,15 @@ abstract class TaskRepository {
 
   /// Lắng nghe thay đổi danh sách task theo projectId
   Stream<List<Task>> getTaskStreamByProject(String projectId);
+
+  /// Lắng nghe tất cả task được gán cho một user (collection group 'tasks')
+  Stream<List<Task>> streamTasksAssignedToUser(String userId);
+
+  /// Cập nhật trạng thái (status) của task: todo/inProgress/done
+  /// Đồng thời cập nhật isCompleted = (status == TaskStatus.done) để tương thích dữ liệu cũ.
+  Future<void> updateTaskStatus({
+    required String projectId,
+    required String taskId,
+    required TaskStatus status,
+  });
 }

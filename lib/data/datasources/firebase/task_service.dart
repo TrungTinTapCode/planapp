@@ -33,6 +33,20 @@ class TaskService {
         .update(task.toJson());
   }
 
+  Future<void> updateTaskStatus({
+    required String projectId,
+    required String taskId,
+    required String status,
+    required bool isCompleted,
+  }) async {
+    await _firestore
+        .collection('projects')
+        .doc(projectId)
+        .collection('tasks')
+        .doc(taskId)
+        .update({'status': status, 'isCompleted': isCompleted});
+  }
+
   Future<void> deleteTask(String projectId, String taskId) async {
     await _firestore
         .collection('projects')
@@ -79,6 +93,27 @@ class TaskService {
         .doc(projectId)
         .collection('tasks')
         .snapshots();
+  }
+
+  /// Stream tất cả task (ở mọi project) được gán cho một user
+  Stream<List<TaskModel>> streamTasksAssignedToUser(String userId) {
+    return _firestore
+        .collectionGroup('tasks')
+        .where('assignee.id', isEqualTo: userId)
+        .snapshots()
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((d) {
+                final data = d.data();
+                // Lấy projectId từ path: projects/{projectId}/tasks/{taskId}
+                final projectId = d.reference.parent.parent?.id;
+                return TaskModel.fromJson({
+                  ...data,
+                  'id': d.id,
+                  if (projectId != null) 'projectId': projectId,
+                });
+              }).toList(),
+        );
   }
 
   /// Tạo thông báo cho user khi được gán vào một task

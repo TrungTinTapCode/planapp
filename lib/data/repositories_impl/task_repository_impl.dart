@@ -6,6 +6,7 @@ import '../../domain/entities/user.dart';
 import '../../domain/repositories/task_repository.dart';
 import '../datasources/firebase/task_service.dart';
 import '../models/task_model.dart';
+import '../models/task_comment_model.dart';
 
 class TaskRepositoryImpl implements TaskRepository {
   final TaskService _taskService;
@@ -84,6 +85,9 @@ class TaskRepositoryImpl implements TaskRepository {
         await _taskService.createTaskAssignedNotification(
           assignee.id,
           updatedModel,
+          assignerId: updatedModel.creator.id,
+          assignerName: _displayNameOrEmail(updatedModel.creator),
+          projectName: updatedModel.projectId,
         );
       }
       return updatedModel;
@@ -166,4 +170,36 @@ class TaskRepositoryImpl implements TaskRepository {
       throw Exception('Failed to update task status: $e');
     }
   }
+
+  Future<void> addComment({
+    required String projectId,
+    required String taskId,
+    required TaskCommentModel comment,
+    String? notifyUserId,
+    String? taskTitle,
+  }) async {
+    await _taskService.addTaskComment(
+      projectId: projectId,
+      taskId: taskId,
+      comment: comment.toJson(),
+    );
+    if (notifyUserId != null && taskTitle != null) {
+      await _taskService.createCommentNotification(
+        notifyUserId: notifyUserId,
+        projectId: projectId,
+        taskId: taskId,
+        taskTitle: taskTitle,
+        commenterId: comment.author.id,
+        commenterName: _displayNameOrEmail(comment.author),
+      );
+    }
+  }
+}
+
+String _displayNameOrEmail(User user) {
+  // User entity likely has non-nullable displayName/email types; map to a safe string
+  final name = (user.displayName).toString();
+  if (name.isNotEmpty) return name;
+  final email = (user.email).toString();
+  return email.isNotEmpty ? email : 'Ai đó';
 }

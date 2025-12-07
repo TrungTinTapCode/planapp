@@ -49,6 +49,7 @@ import '../../domain/repositories/notification_repository.dart';
 import '../../data/repositories_impl/notification_repository_impl.dart';
 import '../../presentation/blocs/notification/notification_bloc.dart';
 import '../../presentation/blocs/kanban/kanban_bloc.dart';
+import '../../presentation/blocs/comment/comment_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -144,4 +145,5 @@ Future<void> initDependencies() async {
   sl.registerFactory(() => ChatBloc(chatRepository: sl()));
   sl.registerFactory(() => NotificationBloc(repo: sl()));
   sl.registerFactory(() => KanbanBloc(taskRepository: sl()));
+  sl.registerFactory(() => CommentBloc(taskService: sl()));
 }

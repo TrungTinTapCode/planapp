@@ -54,25 +54,31 @@ class _LoginScreenContentState extends State<_LoginScreenContent> {
   Widget _buildLoginContent(BuildContext context) {
     final isLoading = context.watch<AuthBloc>().state is AuthLoading;
 
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          LoginUIComponents.loginHeader(),
-          LoginUIComponents.loginForm(
-            emailController: _emailController,
-            passwordController: _passwordController,
-            onLogin: () => _handleLogin(context),
-            isLoading: isLoading,
-            onGoogleSignIn:
-                () => context.read<AuthBloc>().add(AuthGoogleSignInRequested()),
+    return Center(
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              LoginUIComponents.loginHeader(),
+              LoginUIComponents.loginForm(
+                emailController: _emailController,
+                passwordController: _passwordController,
+                onLogin: () => _handleLogin(context),
+                isLoading: isLoading,
+                onGoogleSignIn:
+                    () => context.read<AuthBloc>().add(
+                      AuthGoogleSignInRequested(),
+                    ),
+              ),
+              const SizedBox(height: 20),
+              LoginUIComponents.registerLink(
+                onTap: () => _navigateToRegister(context),
+              ),
+            ],
           ),
-          const SizedBox(height: 20),
-          LoginUIComponents.registerLink(
-            onTap: () => _navigateToRegister(context),
-          ),
-        ],
+        ),
       ),
     );
   }

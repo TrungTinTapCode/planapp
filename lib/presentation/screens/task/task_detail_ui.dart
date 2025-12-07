@@ -58,18 +58,14 @@ class TaskDetailUIComponents {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildTitleSection(task),
-          const SizedBox(height: 16),
-          _buildDescriptionSection(task),
-          const SizedBox(height: 16),
-          _buildDetailsSection(task),
           const SizedBox(height: 24),
+          _buildDescriptionSection(task),
+          const SizedBox(height: 24),
+          _buildDetailsSection(task),
+          const SizedBox(height: 32),
           _buildCompletionButton(task: task, onPressed: onToggleCompletion),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: onDeleteTask,
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Xóa Task'),
-          ),
+          const SizedBox(height: 8),
+          _buildDeleteButton(onDeleteTask),
         ],
       ),
     );
@@ -161,22 +157,44 @@ class TaskDetailUIComponents {
       width: double.infinity,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: task.isCompleted ? Colors.orange : Colors.green,
+          backgroundColor:
+              task.isCompleted ? Colors.orange.shade400 : Colors.green.shade600,
           foregroundColor: Colors.white,
+          elevation: 2,
           padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
         onPressed: onPressed,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(task.isCompleted ? Icons.refresh : Icons.check),
+            Icon(task.isCompleted ? Icons.undo : Icons.check_circle_outline),
             const SizedBox(width: 8),
             Text(
               task.isCompleted ? 'Mark as Incomplete' : 'Mark as Completed',
-              style: const TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // Delete button helper (moved logic out for cleaner main method if needed, but keeping inline for now)
+  static Widget _buildDeleteButton(VoidCallback onPressed) {
+    return SizedBox(
+      width: double.infinity,
+      child: TextButton.icon(
+        onPressed: onPressed,
+        style: TextButton.styleFrom(
+          foregroundColor: Colors.red.shade400,
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+        icon: const Icon(Icons.delete_outline),
+        label: const Text('Delete Task'),
       ),
     );
   }

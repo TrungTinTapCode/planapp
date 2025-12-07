@@ -119,8 +119,11 @@ class TaskService {
   /// Tạo thông báo cho user khi được gán vào một task
   Future<void> createTaskAssignedNotification(
     String userId,
-    TaskModel task,
-  ) async {
+    TaskModel task, {
+    String? assignerId,
+    String? assignerName,
+    String? projectName,
+  }) async {
     final notifRef =
         _firestore
             .collection('users')
@@ -129,12 +132,79 @@ class TaskService {
             .doc();
     await notifRef.set({
       'title': 'Bạn được giao nhiệm vụ mới',
-      'body': 'Công việc: ${task.title}',
+      'body':
+          assignerName != null && projectName != null
+              ? '$assignerName đã giao task cho bạn trong $projectName'
+              : 'Công việc: ${task.title}',
       'type': 'TASK_ASSIGNED',
       'isRead': false,
       'createdAt': FieldValue.serverTimestamp(),
       'projectId': task.projectId,
       'taskId': task.id,
+      if (assignerId != null) 'assignerId': assignerId,
+      if (assignerName != null) 'assignerName': assignerName,
+    });
+  }
+
+  Future<void> addTaskComment({
+    required String projectId,
+    required String taskId,
+    required Map<String, dynamic> comment,
+  }) async {
+    final commentsRef =
+        _firestore
+            .collection('projects')
+            .doc(projectId)
+            .collection('tasks')
+            .doc(taskId)
+            .collection('comments')
+            .doc();
+    await commentsRef.set({
+      ...comment,
+      'id': commentsRef.id,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Stream<QuerySnapshot<Map<String, dynamic>>> streamTaskComments({
+    required String projectId,
+    required String taskId,
+  }) {
+    return _firestore
+        .collection('projects')
+        .doc(projectId)
+        .collection('tasks')
+        .doc(taskId)
+        .collection('comments')
+        // Hiển thị bình luận theo thời gian tăng dần để comment mới nằm dưới
+        .orderBy('createdAt', descending: false)
+        .snapshots();
+  }
+
+  Future<void> createCommentNotification({
+    required String notifyUserId,
+    required String projectId,
+    required String taskId,
+    required String taskTitle,
+    required String commenterId,
+    required String commenterName,
+  }) async {
+    final notifRef =
+        _firestore
+            .collection('users')
+            .doc(notifyUserId)
+            .collection('notifications')
+            .doc();
+    await notifRef.set({
+      'title': 'Bình luận mới',
+      'body': '$commenterName đã bình luận về "$taskTitle"',
+      'type': 'TASK_COMMENTED',
+      'isRead': false,
+      'createdAt': FieldValue.serverTimestamp(),
+      'projectId': projectId,
+      'taskId': taskId,
+      'commenterId': commenterId,
+      'commenterName': commenterName,
     });
   }
 }

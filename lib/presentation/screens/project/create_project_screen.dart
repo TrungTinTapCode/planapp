@@ -61,26 +61,28 @@ class _CreateProjectScreenContentState
           Navigator.pop<ProjectEntity>(context, state.project);
         }
       },
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              CreateProjectUI.projectIcon(),
-              const SizedBox(height: 24),
-              CreateProjectUI.nameField(
-                controller: _nameController,
-                onChanged: (_) => _updateCreateButtonState(),
-              ),
-              const SizedBox(height: 16),
-              CreateProjectUI.descriptionField(
-                controller: _descriptionController,
-                onChanged: (_) => _updateCreateButtonState(),
-              ),
-              const SizedBox(height: 32),
-              _buildCreateButton(),
-            ],
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                CreateProjectUI.projectIcon(),
+                const SizedBox(height: 24),
+                CreateProjectUI.nameField(
+                  controller: _nameController,
+                  onChanged: (_) => _updateCreateButtonState(),
+                ),
+                const SizedBox(height: 16),
+                CreateProjectUI.descriptionField(
+                  controller: _descriptionController,
+                  onChanged: (_) => _updateCreateButtonState(),
+                ),
+                const SizedBox(height: 32),
+                _buildCreateButton(),
+              ],
+            ),
           ),
         ),
       ),
